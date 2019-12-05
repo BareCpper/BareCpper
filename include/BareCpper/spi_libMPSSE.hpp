@@ -116,6 +116,11 @@ namespace BareCpper
     template<>
     inline void SerialImpl<Serial_SPI, SPI_Hardware>::write(uint8_t kPin_MOSI, uint8_t kPin_SCLK, uint8_t val)
     {
+        uint32 sizeTransfered;
+        FT_STATUS  status = SPI_Write(ftHandle, &val, 1, &sizeTransfered,
+            SPI_TRANSFER_OPTIONS_SIZE_IN_BYTES |
+            SPI_TRANSFER_OPTIONS_CHIPSELECT_ENABLE);
+        APP_CHECK_STATUS(status);
     }
 
     template<>
