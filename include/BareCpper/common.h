@@ -9,6 +9,8 @@
 
 namespace BareCpper
 {
+
+#if 0 //~todo Necessary>?
     enum class RegisterType
     {
         portDdr,
@@ -27,7 +29,7 @@ namespace BareCpper
 
 
     typedef volatile uint8_t& Register;
-
+#endif
 
 
 
