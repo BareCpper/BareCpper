@@ -162,7 +162,11 @@ namespace BareCpper
 
         inline void end(uint8_t kPin_SS);
 
-        inline void write(uint8_t kPin_MOSI, uint8_t kPin_SCLK, uint8_t val);
+        inline void write(uint8_t kPin_MOSI, uint8_t kPin_SCLK, const uint8_t value );
+        inline void write(uint8_t kPin_MOSI, uint8_t kPin_SCLK, const uint8_t* values, const size_t valuesCount);
+
+        inline uint8_t read(uint8_t kPin_MOSI, uint8_t kPin_SCLK );
+        inline void read(uint8_t kPin_MOSI, uint8_t kPin_SCLK, uint8_t* values, const size_t valuesCount);
 
         /** SPI Special functions
         */
@@ -205,9 +209,26 @@ namespace BareCpper
             Impl::end(Config_t::Pin_SS);
         }
 
-        void write(uint8_t val)
+        void write(const uint8_t val)
         {
             Impl::write(Config_t::Pin_MOSI, Config_t::Pin_SCLK, val);
+        }
+
+        template<size_t Count>
+        void write(const uint8_t (&values)[Count])
+        {
+            Impl::write(Config_t::Pin_MOSI, Config_t::Pin_SCLK, values, Count);
+        }
+
+        uint8_t read()
+        {
+            return Impl::read(Config_t::Pin_MOSI, Config_t::Pin_SCLK);
+        }
+
+        template<size_t Count>
+        void read(uint8_t (&values)[Count])
+        {
+            Impl::read(Config_t::Pin_MOSI, Config_t::Pin_SCLK, values, Count);
         }
 
         /** SPI Special functions
