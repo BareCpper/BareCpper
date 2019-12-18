@@ -1,3 +1,4 @@
+#define _VARIANT_FEATHER52832_
 #include "include/BareCpper/gpio.hpp"
 
 void setup() {
