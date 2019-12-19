@@ -19,6 +19,14 @@
 
 namespace BareCpper {
 
+    template<> template<size_t PinIndex>
+    struct PortPins<0>::Pin<PinIndex, Valid<(0 <= PinIndex && PinIndex <= 31)>>
+    {
+        constexpr static uint8_t portIndex = 0U;
+        constexpr static uint8_t index = PinIndex;
+
+        using Input = InputPin<PortPins<0>::Pin< PinIndex > >;
+    };
 
     template<>
     struct Port<0> : AllPortPins<0/*Port*/

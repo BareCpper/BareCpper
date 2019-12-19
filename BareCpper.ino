@@ -1,6 +1,16 @@
 #define _VARIANT_FEATHER52832_
 #include "include/BareCpper/gpio.hpp"
 
+#if 1
+using namespace BareCpper;
+Port<0> port0;
+
+Port<0>::Pin<0> pin0;
+//Pin9 encoder1A;
+//Pin8 encoder1B;
+//Pins<Pin8, Pin9> encoderPins; //< Both mins as zero-shifted mask
+#endif
+
 void setup() {
     // initialize digital pin LED_BUILTIN as an output.
     pinMode(LED_BUILTIN, OUTPUT);

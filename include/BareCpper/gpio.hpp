@@ -185,14 +185,6 @@ namespace BareCpper
         return mask<PinsT...>();
     }
 
-    template<> template<size_t PinIndex>
-    struct PortPins<0>::Pin<PinIndex, Valid<(0 <= PinIndex && PinIndex <= 31)>>
-    {
-        constexpr static uint8_t portIndex = 0U;
-        constexpr static uint8_t index = PinIndex;
-
-        using Input = InputPin<PortPins<0>::Pin< PinIndex > >;
-    };
 
 #if 0 ///WIP
     /** Read state of multiple pins from port
@@ -235,7 +227,7 @@ namespace BareCpper
 namespace BareCpper
 {
     //static_assert(mask<Pin0>() != mask<Pin1>(), "mask<PinA> != mask<PinB>() implementation error");
-    //((mask<Pin0>() | mask<Pin1>()) == mask<Pins<Pin0,Pin1>>(), "mask<Pins>( implementation error");
+    //static_assert((mask<Pin0>() | mask<Pin1>()) == mask<Pins<Pin0,Pin1>>(), "mask<Pins>( implementation error");
 
 } //END: BareCpper
 

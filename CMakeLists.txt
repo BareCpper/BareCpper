@@ -13,9 +13,11 @@ target_include_directories( BareCpper
 target_compile_features( BareCpper 
 INTERFACE
     cxx_constexpr
-    cxx_std_17 # fold-expressions
+    cxx_std_14
     cxx_variadic_templates
 )
+
+#set_property(TARGET BareCpper PROPERTY CXX_STANDARD_REQUIRED 11)
 
 #target_sources( BareCpper 
 #    INTERFACE 
