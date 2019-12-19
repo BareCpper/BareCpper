@@ -20,7 +20,7 @@
 namespace BareCpper {
 
     template<> template<size_t PinIndex>
-    struct PortPins<0>::Pin<PinIndex, Valid<(0 <= PinIndex && PinIndex <= 31)>>
+    struct PortPins<0>::Pin ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /**<PinIndex, Valid<(0 <= PinIndex && PinIndex <= 31)>*/
     {
         constexpr static uint8_t portIndex = 0U;
         constexpr static uint8_t index = PinIndex;

@@ -7,8 +7,12 @@
 #ifndef BARECPPER_COMMON_H_
 #define BARECPPER_COMMON_H_
 
+#include <cstdint>
+
 namespace BareCpper
 {
+    //using size_t = std::size_t;
+   // using uint8_t = std::uint8_t;
 
 #if 0 //~todo Necessary>?
     enum class RegisterType

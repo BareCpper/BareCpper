@@ -61,12 +61,12 @@ namespace BareCpper
     template< typename PinT > struct PinN<31u, PinT> { typedef PinT Pin31; };
 
 
-    template<bool> struct Valid; ///< SFINAE
+   // template<bool> struct Valid; ///< SFINAE
 
     template< size_t PortIndex >
     struct PortPins
     {
-        template<size_t PinIndex, typename = Valid<true>>
+        template<size_t PinIndex> ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /*, typename = Valid<true>*/
         struct Pin;
     };
 
@@ -127,7 +127,7 @@ namespace BareCpper
     struct Pins
         : SequencePortPins< PinsT... >
     {
-        using Input = SequencePortPins< typename PinsT::Input... >;
+        //using Input = SequencePortPins< typename PinsT::Input... >;
     };
 
     template< size_t PortIndex>
@@ -226,8 +226,8 @@ namespace BareCpper
 
 namespace BareCpper
 {
-    //static_assert(mask<Pin0>() != mask<Pin1>(), "mask<PinA> != mask<PinB>() implementation error");
-    //static_assert((mask<Pin0>() | mask<Pin1>()) == mask<Pins<Pin0,Pin1>>(), "mask<Pins>( implementation error");
+    static_assert(mask<Pin0>() != mask<Pin1>(), "mask<PinA> != mask<PinB>() implementation error");
+    static_assert((mask<Pin0>() | mask<Pin1>()) == mask<Pins<Pin0,Pin1>>(), "mask<Pins>( implementation error");
 
 } //END: BareCpper
 
