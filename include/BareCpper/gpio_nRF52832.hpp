@@ -73,6 +73,36 @@ namespace BareCpper {
     using Pin30 = Port0::Pin30; // A6
     using Pin31 = Port0::Pin31; // A7
 
+    /** @{ Analog pins  */
+    using PinA0 = Pin2;
+    using PinA1 = Pin3;
+    using PinA2 = Pin4;
+    using PinA3 = Pin5;
+    using PinA4 = Pin28;
+    using PinA5 = Pin29;
+    using PinA6 = Pin30;
+    using PinA7 = Pin31;
+    /** @} */
+
+    /** @{ LEDs */
+    using Led0 = Pin17;
+    using Led1 = Pin19;
+
+    using LedBuiltin = Led0;
+    using LedConn = Led1;
+    
+    using LedRed = Led0;
+    using LedBlue = Led1;
+    /** @} */
+
+    /** @{ Other pins */
+    using PinAREF = Pin24;
+    using PinVBAT = PinA7;
+    using PinNFC1 = Pin9;
+    using PinNFC2 = Pin10;
+    /** @} */
+
+
 #if 0
     template<> template<>
     struct PortPins<0>::Pin<0>

@@ -12,8 +12,8 @@ int main()
     // Port0::Pin0 pin0;
     // Port0::Pin31 pin31;
 
-    Pin9::Input encoder1A;
-    Pin8::Input encoder1B;
+    Pin9 encoder1A;
+    Pin8 encoder1B;
     Pins<Pin8, Pin9> encoderPins; //< Both mins as zero-shifted mask
 
     static_assert( mask(encoder1A) != mask(encoder1B), "mask(pin) != mask(pinB) implementation error" );

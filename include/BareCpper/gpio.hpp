@@ -218,7 +218,7 @@ namespace BareCpper
 		#include "gpio_ATmega328P.hpp" ///< Definitions for ATmega328
 	#endif
 
-    #ifdef  _VARIANT_FEATHER52832_
+    #ifdef NRF52
         #include "gpio_nRF52832.hpp"
     #endif
 
