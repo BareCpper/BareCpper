@@ -1,4 +1,10 @@
 #pragma once
+
+#ifndef BARECPPER_CYCLETIMER_HPP
+#  error "Include <BareCpper/CycleTimer.h> instead of this file."
+#endif
+
+
 namespace BareCpper
 {
     constexpr uint32_t CycleTimer::usToTicks(const uint32_t timeUs)

@@ -7,7 +7,7 @@
  /* barecpper/iom328p.h - definitions for ATmega328P. */
  
  #ifndef BARECPPER_GPIO_H_
- #  error "Include <barecpper/gpio.h> instead of this file."
+ #  error "Include <BareCpper/Gpio.h> instead of this file."
  #endif
 
 #if !_AVR_IOM328P_H_

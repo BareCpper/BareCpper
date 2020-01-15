@@ -9,7 +9,7 @@
 #define BARECPPER_GPIO_NRF52832_H_
 
 #ifndef BARECPPER_GPIO_H_
-#  error "Include <barecpper/gpio.h> instead of this file."
+#  error "Include <BareCpper/Gpio.h> instead of this file."
 #endif
 
 // @todo

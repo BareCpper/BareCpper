@@ -215,11 +215,11 @@ namespace BareCpper
 #if !DOXYGEN ///< Platform specific interface definitions
 
 	#if _AVR_IOM328P_H_ //Defined by #include <avr/io.h>?        
-		#include "gpio_ATmega328P.hpp" ///< Definitions for ATmega328
+		#include "ATmega/Gpio_ATmega328P.hpp" ///< Definitions for ATmega328
 	#endif
 
     #ifdef NRF52
-        #include "gpio_nRF52832.hpp"
+        #include "nRF52/Gpio_nRF52832.hpp"
     #endif
 
 #endif

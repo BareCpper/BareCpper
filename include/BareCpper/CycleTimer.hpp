@@ -1,4 +1,6 @@
-#pragma once
+#ifndef BARECPPER_CYCLETIMER_HPP
+#define BARECPPER_CYCLETIMER_HPP
+
 namespace BareCpper
 {
     //Clock ticks
@@ -32,7 +34,9 @@ namespace BareCpper
 #if !DOXYGEN ///< Platform specific interface definitions
 
     #if NRF52
-        #include "CycleTimer_dwt.hpp"
+        #include "CycleTimer_nRF52.hpp"
     #endif
+
+#endif
 
 #endif

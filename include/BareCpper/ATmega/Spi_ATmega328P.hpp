@@ -5,7 +5,7 @@
  /* barecpper/iom328p.h - definitions for ATmega328P. */
 
 #ifndef BARECPPER_SPI_H_
-#  error "Include <barecpper/spi.h> instead of this file."
+#  error "Include <BareCpper/Spi.h> instead of this file."
 #endif
 
 #if !_AVR_IOM328P_H_

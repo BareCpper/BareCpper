@@ -1,4 +1,3 @@
-#define _VARIANT_FEATHER52832_
 #include "include/BareCpper/gpio.hpp"
 #include "include/BareCpper/CycleTimer.hpp"
 
