@@ -58,11 +58,11 @@ namespace BareCpper {
 #if !DOXYGEN ///< Platform specific interface definitions
 
     #if NRF52
-        #include "CycleTimer_Nrf52.hpp"
+        #include "nRF52/RtcTimer_nRF52.hpp"
     #endif
 
     #if __SAMD51__
-        #include "Samd51x/CycleTimer_Samd5x.hpp"
+        #include "ATsamd/RtcTimer_ATsamd5x.hpp"
     #endif
 
 #endif

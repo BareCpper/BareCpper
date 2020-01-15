@@ -34,7 +34,7 @@ namespace BareCpper
 #if !DOXYGEN ///< Platform specific interface definitions
 
     #if NRF52
-        #include "CycleTimer_nRF52.hpp"
+        #include "nRF52/CycleTimer_nRF52.hpp"
     #endif
 
 #endif

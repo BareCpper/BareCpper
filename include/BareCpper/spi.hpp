@@ -236,20 +236,20 @@ namespace BareCpper
 } //END: BareCpper
 
 #if IMPL_SPI_Software
-#include "spi_Software.hpp"
+#include "Spi_Software.hpp"
 #endif
 
 #if IMPL_SPI_ArduinoSw
-#include "spi_ArduinoSw.hpp"
+#include "Arduino/Spi_ArduinoSw.hpp"
 #endif
 
 #if IMPL_SPI_Arduino
-#include "spi_Arduino.hpp"
+#include "Arduino/Spi_Arduino.hpp"
 #endif
 
 #if SPI_IMPL_HARDWARE
 #if _AVR_IOM328P_H_
-#include "spi_ATmega328P.h"
+#include "ATmega/Spi_ATmega328P.h"
 #else
 #  error "AVR library error, please check and update accordingly."
 #endif
