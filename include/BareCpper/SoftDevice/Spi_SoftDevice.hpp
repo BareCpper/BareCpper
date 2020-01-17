@@ -50,7 +50,7 @@ namespace BareCpper
         for (uint8_t mask = 1 << 7u; mask; mask >>= 1u)
         {
             digitalBitClear(kPin_SCLK);
-#if 0 //< Saves 32 cycles!?
+#if 0 //< Saves 32 cycles on ATmega328!?
             digitalBitWriteAndSet(kPin_MOSI, (val & mask), kPin_SCLK);
 #else
             digitalBitWrite(kPin_MOSI, (val & mask));	//Set data pin state based on input values bit

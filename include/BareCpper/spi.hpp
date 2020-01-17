@@ -236,7 +236,7 @@ namespace BareCpper
 } //END: BareCpper
 
 #if IMPL_SPI_Software
-#include "Spi_Software.hpp"
+#include "SoftDevice/Spi_SoftDevice.hpp"
 #endif
 
 #if IMPL_SPI_ArduinoSw
