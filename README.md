@@ -14,3 +14,13 @@ Broken down it's Bare-CPP-er or Bare-C'o'pper which both elate to the low level 
 ## How can I easily migrate to BareCpper? 
 BareCpper can be used inside you existing Arduino projects. You can therefore transition you code to BareCpper incrementally. When you've done so you can port your code to other build systems for serous development. 
 
+# Building
+BareCpper shall be mostly header-only but there is  lot of refactoring/rework going on at present so will require some expereicne in C/C++ to extract useable features.
+
+## CMake
+CMake is being implemented for CI+CD but is in development. To test locally please execute the following to conigure and build successfully before commiting:
+```
+mkdir -p ./build
+cmake -B ./build
+cmake --build ./build 
+```

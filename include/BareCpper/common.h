@@ -7,8 +7,14 @@
 #ifndef BARECPPER_COMMON_H_
 #define BARECPPER_COMMON_H_
 
+#include <cstdint>
+
 namespace BareCpper
 {
+    //using size_t = std::size_t;
+   // using uint8_t = std::uint8_t;
+
+#if 0 //~todo Necessary>?
     enum class RegisterType
     {
         portDdr,
@@ -27,7 +33,7 @@ namespace BareCpper
 
 
     typedef volatile uint8_t& Register;
-
+#endif
 
 
 
@@ -64,6 +70,43 @@ namespace BareCpper
 
 
 #endif
+    
+    /** Wait for a duration of time
+     * @param[in]  tickTimer  Timer used to measure ticks e.g. CycleTimer, MsTimer etc
+     * @param[in]  timerTickCount  Delay between consecutive checks, in unit of Timer tick e.g. ClockCycle, Millisecond, Microsecond etc.
+     * @return Set to true if the condition is met or false otherwise.
+     */
+    template<typename Timer >
+    void delay( Timer timer, uint32_t timerTickCount )
+    {
+        const uint32_t tickEnd = timer.count() + timerTickCount;
+        while (timer.count() < tickEnd)
+        {};
+    }
+
+
+    /** Wait until condition is met.
+     *
+     * @param[in]  condition Condition to meet.
+     * @param[in]  attempts  Maximum number of condition checks. Must not be 0.
+     * @param[in]  tickTimer  Timer used to measure ticks e.g. CycleTimer, MsTimer etc
+     * @param[in]  delayTickCount  Delay between consecutive checks, in unit of Timer tick e.g. ClockCycle, Millisecond, Microsecond etc.
+     * @return Set to true if the condition is met or false otherwise.
+     */
+    template<typename ConditionFn, typename Timer >
+    bool waitForCondition(const ConditionFn& condition, uint32_t attempts, Timer tickTimer, uint32_t delayTickCount)
+    {
+        for (; attempts != 0; --attempts )
+        {
+            if ( condition() )
+            {
+                return true;
+            }
+            delay(tickTimer, delayTickCount);
+        }
+
+        return false;
+    }
 
 } //END: BareCpper
 
