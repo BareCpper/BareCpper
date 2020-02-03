@@ -1,3 +1,4 @@
 #dd_subdirectory(QuadratureEncoder)
 
-add_subdirectory(devel)
+# @todo Implement PC mocking of GPIO functions
+# add_subdirectory(delay)
