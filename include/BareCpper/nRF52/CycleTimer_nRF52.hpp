@@ -12,11 +12,15 @@ namespace BareCpper
         /// @todo Hard coded clock frequency!!
         return timeUs * 64U;
     }
-
+    
     CycleTimer::CycleTimer()
+    {}
+
+    bool CycleTimer::initialise()
     {
         CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; //< Enable DWT
         start();
+        return true;
     }
 
     inline void CycleTimer::stop()

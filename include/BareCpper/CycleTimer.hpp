@@ -17,6 +17,8 @@ namespace BareCpper
 
     public:
         CycleTimer();
+        
+        bool initialise();
 
         void stop();
 
