@@ -17,7 +17,40 @@ namespace BareCpper {
         return 32768U;
     }
 
-    void RtcTimer::initialise(void);
+    void RtcTimer::initialise(void)
+    {
+        // turn on digital interface clocks
+        MCLK->APBAMASK.bit.OSC32KCTRL_ = 1;
+        MCLK->APBAMASK.bit.RTC_ = 1;
+
+#if !CRYSTALLESS
+        OSC32KCTRL->XOSC32K.reg = OSC32KCTRL_XOSC32K_EN32K | // enable XOSC32K 32KHz clock output	
+            OSC32KCTRL_XOSC32K_XTALEN |
+            OSC32KCTRL_XOSC32K_ENABLE |
+            //OSC32KCTRL_XOSC32K_CGM_XT |
+            OSC32KCTRL_XOSC32K_RUNSTDBY |
+            OSC32KCTRL_XOSC32K_ONDEMAND |
+            OSC32KCTRL_XOSC32K_STARTUP(3);
+        while (!OSC32KCTRL->INTFLAG.bit.XOSC32KRDY);
+#endif
+
+        OSC32KCTRL->XOSC32K.bit.EN32K = true;
+
+        OSC32KCTRL->RTCCTRL.bit.RTCSEL = OSC32KCTRL_RTCCTRL_RTCSEL_ULP32K_Val; // select 32KHz clock to drive RTC...
+
+        stop();
+
+        //Reset
+        RTC->MODE0.CTRLA.bit.SWRST = 1;
+        while (RTC->MODE0.SYNCBUSY.reg & RTC_MODE0_SYNCBUSY_SWRST);
+
+        RTC->MODE0.DBGCTRL.bit.DBGRUN = 1; // set RTC to continue running when processor is halted by debugger
+        RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_MODE_COUNT32 // put RTC in 32 bit counter mode
+            | RTC_MODE0_CTRLA_PRESCALER_DIV1 // with prescaler set to 1 to get 30.517us interval
+            | RTC_MODE0_SYNCBUSY_COUNTSYNC; // and COUNTSYNC set to get stable count values on reads.
+
+        while (RTC->MODE0.SYNCBUSY.bit.COUNTSYNC);
+    }
 
     /** Start the counter. */
     void RtcTimer::start(void)
