@@ -14,7 +14,9 @@ namespace BareCpper
     }
     
     inline CycleCounter::CycleCounter()
-    {}
+    {
+        initialise();
+    }
 
     inline bool CycleCounter::initialise()
     {

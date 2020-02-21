@@ -16,6 +16,8 @@ namespace BareCpper
         }
 
     public:
+        /** @note Implicit call to initialise() 
+        */
         CycleCounter();
         
         bool initialise();
