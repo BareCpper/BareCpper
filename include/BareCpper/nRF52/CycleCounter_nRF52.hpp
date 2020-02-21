@@ -7,16 +7,16 @@
 
 namespace BareCpper
 {
-    constexpr uint32_t CycleCounter::usToTicks(const uint32_t timeUs)
+    inline constexpr uint32_t CycleCounter::usToTicks(const uint32_t timeUs)
     {
         /// @todo Hard coded clock frequency!!
         return timeUs * 64U;
     }
     
-    CycleCounter::CycleCounter()
+    inline CycleCounter::CycleCounter()
     {}
 
-    bool CycleCounter::initialise()
+    inline bool CycleCounter::initialise()
     {
         CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; //< Enable DWT
         start();
