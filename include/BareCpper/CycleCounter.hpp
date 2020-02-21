@@ -4,7 +4,7 @@
 namespace BareCpper
 {
     //Clock ticks
-    class CycleTimer
+    class CycleCounter
     {
     public:
 
@@ -16,7 +16,7 @@ namespace BareCpper
         }
 
     public:
-        CycleTimer();
+        CycleCounter();
         
         bool initialise();
 
@@ -35,9 +35,11 @@ namespace BareCpper
 
 #if !DOXYGEN ///< Platform specific interface definitions
 
-    #if NRF52
-        #include "nRF52/CycleTimer_nRF52.hpp"
-    #endif
+#if NRF52_SERIES
+#include "nRF52/CycleCounter_nRF52.hpp"
+#elif __SAMD51__
+#include "ATsamd/CycleCounter_ATsamd5x.hpp"
+#endif
 
 #endif
 

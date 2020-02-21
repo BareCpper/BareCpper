@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef BARECPPER_RTCTIMER_H_
-#  error "Include <BareCpper/RtcTimer.hpp> instead of this file."
+#  error "Include <BareCpper/RtcCounter.hpp> instead of this file."
 #endif
 
 #if !__SAMD51__
@@ -12,12 +12,12 @@
 
 namespace BareCpper {
 
-    constexpr uint32_t RtcTimer::ticksPerSecond()
+    constexpr uint32_t RtcCounter::ticksPerSecond()
     {
         return 32768U;
     }
 
-    void RtcTimer::initialise(void)
+    void RtcCounter::initialise(void)
     {
         // turn on digital interface clocks
         MCLK->APBAMASK.bit.OSC32KCTRL_ = 1;
@@ -52,20 +52,19 @@ namespace BareCpper {
         while (RTC->MODE0.SYNCBUSY.bit.COUNTSYNC);
     }
 
-    /** Start the counter. */
-    void RtcTimer::start(void)
+    void RtcCounter::start(void)
     {
         RTC->MODE0.CTRLA.bit.ENABLE = 1;
         while (RTC->MODE0.SYNCBUSY.bit.ENABLE);// wait for RTC settings for COUNTSYNC and ENABLE to be synced
     }
 
-    void RtcTimer::stop(void)
+    void RtcCounter::stop(void)
     {
         RTC->MODE0.CTRLA.bit.ENABLE = 0;
         while (RTC->MODE0.SYNCBUSY.bit.ENABLE); // wait for RTC settings for COUNTSYNC and ENABLE to be synced
     }
 
-    uint32_t RtcTimer::count(void)
+    uint32_t RtcCounter::count(void)
     {
         while (RTC->MODE0.SYNCBUSY.bit.COUNT);                    // wait for COUNT sync before reading per SAMD5xE5x Family Datasheet...
         return RTC->MODE0.COUNT.reg;                                              //  then return it.

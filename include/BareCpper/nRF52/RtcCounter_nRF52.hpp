@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef BARECPPER_RTCTIMER_H_
-#  error "Include <BareCpper/RtcTimer.hpp> instead of this file."
+#  error "Include <BareCpper/RtcCounter.hpp> instead of this file."
 #endif
 
 #if !NRF52
@@ -13,12 +13,12 @@
 
 namespace BareCpper {
 
-    constexpr uint32_t RtcTimer::ticksPerSecond()
+    constexpr uint32_t RtcCounter::ticksPerSecond()
     {
         return 32768U;
     }
 
-    void RtcTimer::initialise(void)
+    void RtcCounter::initialise(void)
     {
         // Start 32 MHz crystal oscillator
         NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
@@ -33,17 +33,17 @@ namespace BareCpper {
         NRF_RTC2->CC[0] = 1;    
     }
 
-    void RtcTimer::start(void)
+    void RtcCounter::start(void)
     {
         NRF_RTC2->TASKS_START = 1;
     }
 
-    void RtcTimer::stop(void)
+    void RtcCounter::stop(void)
     {
         NRF_RTC2->TASKS_START = 0;
     }
 
-    uint32_t RtcTimer::count(void)
+    uint32_t RtcCounter::count(void)
     {
         return NRF_RTC2->COUNTER;
     }

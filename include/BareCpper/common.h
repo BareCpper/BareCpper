@@ -72,7 +72,7 @@ namespace BareCpper
 #endif
     
     /** Wait for a duration of time
-     * @param[in]  tickTimer  Timer used to measure ticks e.g. CycleTimer, MsTimer etc
+     * @param[in]  tickTimer  Timer used to measure ticks e.g. CycleCounter, MsTimer etc
      * @param[in]  timerTickCount  Delay between consecutive checks, in unit of Timer tick e.g. ClockCycle, Millisecond, Microsecond etc.
      * @return Set to true if the condition is met or false otherwise.
      */
@@ -89,7 +89,7 @@ namespace BareCpper
      *
      * @param[in]  condition Condition to meet.
      * @param[in]  attempts  Maximum number of condition checks. Must not be 0.
-     * @param[in]  tickTimer  Timer used to measure ticks e.g. CycleTimer, MsTimer etc
+     * @param[in]  tickTimer  Timer used to measure ticks e.g. CycleCounter, MsTimer etc
      * @param[in]  delayTickCount  Delay between consecutive checks, in unit of Timer tick e.g. ClockCycle, Millisecond, Microsecond etc.
      * @return Set to true if the condition is met or false otherwise.
      */

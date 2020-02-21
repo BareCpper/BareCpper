@@ -7,7 +7,7 @@ namespace BareCpper {
 
     /** Real-time clock counter using 32768Hz clock timer
     */
-    class RtcTimer
+    class RtcCounter
     {
     public:
 
@@ -57,12 +57,10 @@ namespace BareCpper {
 
 #if !DOXYGEN ///< Platform specific interface definitions
 
-    #if NRF52
-        #include "nRF52/RtcTimer_nRF52.hpp"
-    #endif
-
-    #if __SAMD51__
-        #include "ATsamd/RtcTimer_ATsamd5x.hpp"
-    #endif
+#if NRF52_SERIES
+#include "nRF52/RtcCounter_nRF52.hpp"
+#elif __SAMD51__
+#include "ATsamd/RtcCounter_ATsamd5x.hpp"
+#endif
 
 #endif

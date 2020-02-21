@@ -1,16 +1,16 @@
 #include "include/BareCpper/gpio.hpp"
-#include "include/BareCpper/CycleTimer.hpp"
+#include "include/BareCpper/CycleCounter.hpp"
 
 
 #include <nrfx.h>
 
 #if 1
-namespace BC = BareCpper;
-BC::Port<0> port0;
+namespace Bare = BareCpper;
+Bare::Port<0> port0;
 
 //Port<0>::Pin<0> pin0;
-BC::Pin9 encoder1A;
-BC::Pin8 encoder1B;
+Bare::Pin9 encoder1A;
+Bare::Pin8 encoder1B;
 //Pins<Pin8, Pin9> encoderPins; //< Both mins as zero-shifted mask
 #endif
 
@@ -24,7 +24,7 @@ void setup() {
 // the loop function runs over and over again forever
 void loop()
 {
-    BC::CycleTimer timer;
+    Bare::CycleCounter timer;
     timer.reset();
 
     const uint32_t tickbase = timer.count();
@@ -49,11 +49,11 @@ void loop()
     const uint32_t tick0 = timer.count()- tickbase;
     digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
     const uint32_t tick1 = timer.count() - tickbase;
-    BC::delay(timer, BC::CycleTimer::msToTicks(100)); // wait for a second
+    Bare::delay(timer, Bare::CycleCounter::msToTicks(100)); // wait for a second
     const uint32_t tick2 = timer.count() - tickbase;
     digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
     const uint32_t tick3 = timer.count() - tickbase;
-    BC::delay(timer, BC::CycleTimer::msToTicks(100)); // wait for a second
+    Bare::delay(timer, Bare::CycleCounter::msToTicks(100)); // wait for a second
     const uint32_t tick4 = timer.count() - tickbase;
 
     char buff[64];
