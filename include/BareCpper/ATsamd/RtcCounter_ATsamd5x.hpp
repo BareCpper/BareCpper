@@ -23,20 +23,19 @@ namespace BareCpper {
         MCLK->APBAMASK.bit.OSC32KCTRL_ = 1;
         MCLK->APBAMASK.bit.RTC_ = 1;
 
-#if !CRYSTALLESS
-        OSC32KCTRL->XOSC32K.reg = OSC32KCTRL_XOSC32K_EN32K | // enable XOSC32K 32KHz clock output	
-            OSC32KCTRL_XOSC32K_XTALEN |
-            OSC32KCTRL_XOSC32K_ENABLE |
-            //OSC32KCTRL_XOSC32K_CGM_XT |
-            OSC32KCTRL_XOSC32K_RUNSTDBY |
-            OSC32KCTRL_XOSC32K_ONDEMAND |
-            OSC32KCTRL_XOSC32K_STARTUP(3);
+#if !defined(CRYSTALLESS) // Enable XOSC32K clock(External on - board 32.768Hz oscillator)
+        OSC32KCTRL->XOSC32K.reg = OSC32KCTRL_XOSC32K_ENABLE
+            | OSC32KCTRL_XOSC32K_EN32K
+            | OSC32KCTRL_XOSC32K_CGM_XT
+            | OSC32KCTRL_XOSC32K_XTALEN;
         while (!OSC32KCTRL->INTFLAG.bit.XOSC32KRDY);
-#endif
 
+        OSC32KCTRL->RTCCTRL.bit.RTCSEL = OSC32KCTRL_RTCCTRL_RTCSEL_XOSC32K_Val; // select 32KHz clock to drive RTC...
+
+#else // Put OSCULP32K as source of Generic
         OSC32KCTRL->XOSC32K.bit.EN32K = true;
-
         OSC32KCTRL->RTCCTRL.bit.RTCSEL = OSC32KCTRL_RTCCTRL_RTCSEL_ULP32K_Val; // select 32KHz clock to drive RTC...
+#endif
 
         stop();
 
