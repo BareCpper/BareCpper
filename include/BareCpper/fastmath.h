@@ -21,14 +21,16 @@ Type fastDivide( const Type val );
  
  /** Equivalent to: * 0.1f (Full range uses 6bits 0-25) 
  @note Uses 16-bit logic 
+ @warning Faster on platforms without integer-divide e.g. ATmega328p
  */
 template<> uint8_t fastDivide<10u,uint8_t>( const uint8_t val )
 { return (uint16_t(val) * 205) >> 11/*2048*/; }
 
 /** Equivalent to: * 0.1f (Full range uses 13bits 0-6553) 
  @note Uses 32-bit logic 
+ @warning Faster on platforms without integer-divide optimisation e.g. ATmega328p, othetrs TBC, {X64 saves 1 instruction}
  */
 template<> uint16_t fastDivide<10u,uint16_t>( const uint16_t val )
-{ return (uint32_t(val) * 52429) >> 19/*524288*/;  }
+{ return (uint32_t(val) * 52429) >> 19/*524288*/;  } ///< @note ASM: x86=
 
 #endif /* MATHS_H_ */
