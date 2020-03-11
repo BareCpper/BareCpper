@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef BARECPPER_RTCTIMER_H_
+#ifndef BARECPPER_RTCCOUNTER_HPP
 #  error "Include <BareCpper/RtcCounter.hpp> instead of this file."
 #endif
 

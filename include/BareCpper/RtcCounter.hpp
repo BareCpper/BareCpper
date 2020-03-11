@@ -1,5 +1,5 @@
-#ifndef BARECPPER_RTCTIMR_HPP
-#define BARECPPER_RTCTIMR_HPP
+#ifndef BARECPPER_RTCCOUNTER_HPP
+#define BARECPPER_RTCCOUNTER_HPP
 
 #include <cstdint> //< uint32_t
 
@@ -56,11 +56,11 @@ namespace BareCpper {
 } //END: BareCpper
 
 #if !DOXYGEN ///< Platform specific interface definitions
-
-#if NRF52_SERIES
-#include "nRF52/RtcCounter_nRF52.hpp"
-#elif __SAMD51__
-#include "ATsamd/RtcCounter_ATsamd5x.hpp"
+    #if NRF52_SERIES
+        #include "nRF52/RtcCounter_nRF52.hpp"
+    #elif __SAMD51__
+        #include "ATsamd/RtcCounter_ATsamd5x.hpp"
+    #endif
 #endif
 
 #endif
