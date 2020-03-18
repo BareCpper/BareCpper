@@ -9,11 +9,11 @@ namespace BareCpper
     inline IoDescriptor SpiDma::io()
     {
         return {
-            [](IoDescriptor& descriptor, const uint8_t* const buffer, const uint16_t bufferLength) ->int32_t
+            [](const IoDescriptor& descriptor, uint8_t* const buffer, const uint16_t bufferLength) ->int32_t
             {
                 return 0; //< Read result
             },
-            [](IoDescriptor& descriptor, uint8_t* const buffer, const uint16_t bufferLength) ->int32_t
+            [](const IoDescriptor& descriptor, const uint8_t* const buffer, const uint16_t bufferLength) ->int32_t
             {
                 return 0; //< Write result
             }
