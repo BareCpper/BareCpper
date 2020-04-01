@@ -18,9 +18,11 @@ namespace BareCpper
 } //END: BareCpper
 
 #if !DOXYGEN ///< Platform specific interface definitions
-#if __SAMD51__
-#include "ATsamd/DeviceUid_Atsamd5x.hpp"
-#endif
+    #if NRF52_SERIES
+        #include "nRF52/DeviceUid_nRF52.hpp"
+    #elif __SAMD51__
+        #include "ATsamd/DeviceUid_Atsamd5x.hpp"
+    #endif
 #endif
 
 #endif
