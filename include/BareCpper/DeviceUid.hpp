@@ -5,7 +5,7 @@
 
 namespace BareCpper
 {
-    /** Device unique identifer
+    /** Device unique identifier
     */
     class DeviceUid
     {
