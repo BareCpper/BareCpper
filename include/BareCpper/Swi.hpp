@@ -28,18 +28,26 @@ namespace BareCpper
         */
         struct __attribute__((packed)) Package_t
         {
-            uint8_t dev_addr;																//SWI chip address to communicate with.
-            uint8_t opcode;																	//op code
-            uint8_t mem_addr;																//SWI address/commands to issue to the other chip (node).
-            uint8_t mem_addr_length;														//as
-            void* buffer;																	//where to find the data.		
-            uint16_t wlen;																	//how many bytes do we want to write.
-            uint16_t rlen;																	//how many bytes do we want to read.
-            uint8_t chk_ack_only_flag;														//this flag tells the low level drive to check for ack only
+            uint8_t deviceAddress; //SWI chip address to communicate with.
+            uint8_t opcode; //op code
+            uint8_t memoryAddress; //SWI address/commands to issue to the other chip (node).
+            uint8_t memoryAddressLength; //as
+            uint8_t* buffer; //where to find the data.		
+            uint16_t wlen; //how many bytes do we want to write.
+            uint16_t rlen; //how many bytes do we want to read.
+            uint8_t chk_ack_only_flag; //this flag tells the low level drive to check for ack only
         };
 
 
     public:
+
+        /// @todo GPIO
+        Swi( const uint8_t iPort, const uint8_t iPin )
+            : iPort_(iPort)
+            , iPin_(iPin)
+        {
+            
+        };
 
 #if 0 ///< @todo Standardise IO interfaces
         IoDescriptor io()
@@ -77,33 +85,36 @@ namespace BareCpper
 
         /** Transmit data bytes
         */
-        uint8_t send_bytes(uint8_t count, uint8_t* buffer);
+        Status send_bytes(uint8_t count, uint8_t* buffer);
         
-        inline uint8_t send_byte(uint8_t value)
+        inline Status send_byte(uint8_t value)
         {
             return send_bytes(1, &value);
         }
 
         /** Receive bytes
         */
-        uint8_t receive_bytes(uint8_t count, uint8_t* buffer); 
+        Status receive_bytes(uint8_t count, uint8_t* buffer);
         
         /** Perform device discovery response
         */
-        uint8_t device_discovery(void);
+        bool device_discovery(void);
 
         /** Read operation
         */
-        uint8_t read(const Package_t* pkg);
+        Status read(const Package_t* pkg);
 
         /** Write operation
         */
-        uint8_t write(const Package_t* pkg);
+        Status write(const Package_t* pkg);
 
         /** Set device to operate in standard speed mode
         */
-        uint8_t write_stdspeed_cmd(const Package_t* packet);
-
+        Status write_stdspeed_cmd(const Package_t* packet);
+    
+    protected:
+        const uint8_t iPort_;
+        const uint8_t iPin_;
     };
 
 } //END: BareCpper

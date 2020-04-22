@@ -10,7 +10,7 @@ namespace BareCpper
     inline constexpr uint32_t CycleCounter::usToTicks(const uint32_t timeUs)
     {
         /// @todo Hard coded clock frequency!!
-        return timeUs * 120U;
+        return timeUs * (F_CPU / 1000000);
     }
     
     inline CycleCounter::CycleCounter()
