@@ -17,20 +17,20 @@
 #define swi_disable_interrupts __disable_irq //disable interrupts
 
 //define Reset and Discovery Timing
-#define tDSCHG				200000												//min spec = 150us
-#define tRESET				500000												//min spec = 480us (STD Speed)
-#define tRRT				10000												//min spec = 8us
-#define tDRR				1000												//min spec = 1us; max spec = 2us
-#define tMSDR				2000												//min spec = 2us; max spec = 6us
-#define tHTSS				200000												//min spec = 150us
+#define tDSCHG				200/*000ns*/												//min spec = 150us
+#define tRESET				500/*000nsn*/												//min spec = 480us (STD Speed)
+#define tRRT				10/*000ns*/												//min spec = 8us
+#define tDRR				1/*000ns*/												//min spec = 1us; max spec = 2us
+#define tMSDR				2/*000ns*/												//min spec = 2us; max spec = 6us
+#define tHTSS				200/*000ns*/												//min spec = 150us
 
-#define tDACK_DLY			delayNs(8000)
-#define tRRT_DLY			delayNs(tRRT)
-#define tDRR_DLY			delayNs(tDRR)
-#define tMSDR_DLY			delayNs(tMSDR) //< unused
-#define tDSCHG_DLY			delayNs(tDSCHG)
-#define tDRESET_DLY			delayNs(tRESET) ///< Unused
-#define tHTSS_DLY           delayNs(tHTSS)
+#define tDACK_DLY			delayUs(8/*000ns*/)
+#define tRRT_DLY			delayUs(tRRT)
+#define tDRR_DLY			delayUs(tDRR)
+#define tMSDR_DLY			delayUs(tMSDR) //< unused
+#define tDSCHG_DLY			delayUs(tDSCHG)
+#define tDRESET_DLY			delayUs(tRESET) ///< Unused
+#define tHTSS_DLY           delayUs(tHTSS)
 
 
 //define High-Speed Mode Communication Timing
@@ -63,35 +63,16 @@
 #define tRCV0_DLY			delayNs(tBIT_TYPICAL - tLWO_TYPICAL)
 #define tRCV1_DLY			delayNs(tBIT_TYPICAL - tLW1_TYPICAL)
 
-
-//// TEMP
-#include "delay.h" ///< @todo remove Arduino
+#include "../Delay.hpp" //< BareCpper::delayNs/Ms/Us
 
 namespace BareCpper
 {
-	/// @todo Proper impl!
-	inline void delayNs(const uint16_t delay)
-	{
-		::delayMicroseconds(delay / 1000);
-	}
-
-	/// @todo Proper impl!
-	inline void delayUs(const uint16_t delay )
-	{
-		::delayMicroseconds(delay);
-	}
-
-	/// @todo Proper impl!
-	inline void delayMs( const uint16_t delay )
-	{
-		::delayMicroseconds(delay * 1000);
-	}
-
 	/** Set pin as output low
 	@note ATmega: {PORT_DDR |= si_pin; PORT_OUT &= ~si_pin;}
 	*/
 	inline void drive_si_low(const uint8_t iPort, const uint8_t iPin)
 	{
+		PORT->Group[iPort].PINCFG[iPin].reg = (uint8_t)(PORT_PINCFG_INEN);
 		PORT->Group[iPort].DIRSET.reg = (1 << iPin); // Set pin to output mode
 		PORT->Group[iPort].OUTCLR.reg = (1 << iPin); // Drive low
 	}
@@ -101,6 +82,7 @@ namespace BareCpper
 	*/
 	inline void release_si(const uint8_t iPort, const uint8_t iPin)
 	{
+		// @note External pull-up is in place so we don't need to pull high
 		PORT->Group[iPort].PINCFG[iPin].reg = (uint8_t)(PORT_PINCFG_INEN);// Set pin to input
 		PORT->Group[iPort].DIRCLR.reg = (1 << iPin); // Set pin to input mode
 	}
@@ -110,7 +92,7 @@ namespace BareCpper
 	*/
 	inline bool readIn(const uint8_t iPort, const uint8_t iPin)
 	{
-		return (PORT->Group[iPort].IN.reg & (1 << iPin)) != 0 ? true : false;
+		return (PORT->Group[iPort].IN.reg & (1 << iPin)) != 0;
 	}
 
 	/** Enable pin as output
@@ -122,7 +104,6 @@ namespace BareCpper
 		PORT->Group[iPort].PINCFG[iPin].reg = (uint8_t)(PORT_PINCFG_INEN);
 		drive_si_low(iPort, iPin);
 	}
-
 
 	/** Enable pin as input
 	@note ATmega: PORT_DDR &= ~devicePin_;
@@ -272,16 +253,15 @@ namespace BareCpper
 
 	inline Swi::Status Swi::receive_bytes(uint8_t count, uint8_t* buffer)
 	{
-		uint8_t bit_mask; //declares variable for bit mask for data to be transmitted
 		swi_disable_interrupts(); //disable interrupts while sending
-		memset(&buffer[0], 0, count); //clear buffer before reading
+		std::memset(&buffer[0], 0, count); //clear buffer before reading
 																
 		enableInput(iPort_, iPin_);//configure signal pin as input.
 
 		//data phase,... Receive bits and store in buffer.
 		for (uint8_t ii = 0; ii < count; ii++) //for loop for number of byte to be received 
 		{
-			for (bit_mask = 0x80; bit_mask >= 1; bit_mask >>= 1) //for loop for bit mask
+			for (uint8_t bit_mask = 0x80; bit_mask >= 1; bit_mask >>= 1) //for loop for bit mask
 			{
 	#ifdef STANDARD_SPEED //device is set for standard speed communication 
 				initDeviceWriteStd( iPort_, iPin_ ); //standard speed mode master read bit frame where delay is tRD
@@ -298,10 +278,14 @@ namespace BareCpper
 				}
 				tBIT_DLY; //bit frame duration (tBIT) before reading the next bit
 			}
-			if (ii < (count - 1)) { sendAck(); } //send ACK except for last byte of read --> GO TO sendAck()
+			if (ii < (count - 1)) 
+			{ 
+				sendAck(); //send ACK except for last byte of read --> GO TO sendAck()
+			} 
 		}
 		sendNack(); //send NACK to EEPROM signalling read is complete
 		swi_enable_interrupts(); //enable interrupts after sending
+
 		return Status::Success; //return success code
 	}
 
@@ -353,7 +337,8 @@ namespace BareCpper
 			tRD_HDLY; //SI/O low time during read delay
 			release_si( iPort_, iPin_ ); //release SI/O pin and set as input
 			tLOW1_HDLY; //master read strobe time (same as SI/O low time, logic '1') delay
-		//check for ACK/NACK	
+		
+			//check for ACK/NACK	
 			if (readIn( iPort_, iPin_ )) //if a NAK is detected
 			{
 				release_si( iPort_, iPin_ ); //release SI/O pin and set as input

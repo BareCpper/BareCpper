@@ -8,6 +8,7 @@
 #define BARECPPER_COMMON_H_
 
 #include <cstdint>
+#include "Delay.hpp" //< BareCpper::delay
 
 namespace BareCpper
 {
@@ -70,24 +71,11 @@ namespace BareCpper
 
 
 #endif
-    
-    /** Wait for a duration of time
-     * @param[in]  tickTimer  Timer used to measure ticks e.g. CycleCounter, MsTimer etc
-     * @param[in]  timerTickCount  Delay between consecutive checks, in unit of Timer tick e.g. ClockCycle, Millisecond, Microsecond etc.
-     * @return Set to true if the condition is met or false otherwise.
-     */
-    template<typename Timer >
-    void delay( Timer timer, uint32_t timerTickCount )
-    {
-        const uint32_t tickEnd = timer.count() + timerTickCount;
-        while (timer.count() < tickEnd)
-        {};
-    }
 
 
-    /** Syncronous polling for a condition to be true at a specified interval
-     * 
-     * @param[in]  condition Condition to meet.
+    /** Synchronous polling for a condition to be true at a specified interval
+     *
+     * @param[in]  condition  Function of functor object whose return type evaluates to a boolean e.g. [](){ return rand() > 255; }
      * @param[in]  pollAttempts  Maximum number of condition checks. Must not be 0.
      * @param[in]  tickTimer  Timer used to measure ticks e.g. CycleCounter, MsTimer etc
      * @param[in]  delayTickCount  Delay between consecutive checks, in unit of Timer tick e.g. ClockCycle, Millisecond, Microsecond etc.
@@ -98,7 +86,7 @@ namespace BareCpper
     {
         for (; pollAttempts != 0; --pollAttempts)
         {
-            if ( condition() )
+            if (condition())
             {
                 return true;
             }

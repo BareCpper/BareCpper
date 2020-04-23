@@ -8,11 +8,23 @@ namespace BareCpper
     {
     public:
 
-        static constexpr uint32_t usToTicks(const uint32_t timeUs);
+        /** i.e. timeUs*120 @ 120MHz
+        */
+        static constexpr uint32_t usToTicks(const uint16_t timeUs);
 
-        static constexpr uint32_t msToTicks(const uint32_t timeMs)
+        /** i.e. timeUs*0.120 @ 120MHz
+        */
+        static constexpr uint32_t nsToTicks(const uint16_t timeUs)
         {
-            return usToTicks(timeMs * 1000U);
+            // @todo Round up or down?
+            return usToTicks(timeUs) / 1000U;
+        }
+
+        /** i.e. timeUs*120,000 @ 120MHz
+        */
+        static constexpr uint32_t msToTicks(const uint16_t timeMs)
+        {
+            return usToTicks(timeMs) * 1000U;
         }
 
     public:
