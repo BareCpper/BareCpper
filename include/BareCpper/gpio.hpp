@@ -10,7 +10,7 @@
 #define BARECPPER_GPIO_H_
 
 #include <stdint.h>
-#include "common.h"
+#include "Common.hpp"
 
 /** Each GPIO port drives 8, 16, 32 or so pins and is controlled by three registers in common. 
 @note Some platforms also allow extra port capability as exetension to these:
@@ -165,7 +165,7 @@ namespace BareCpper
     template< typename PinsT >
     constexpr PortRegister_t mask(const PinsT& pin)
     {
-        return PortRegister_t(1U) << pin.index;
+        return pin.mask;
     }
 
     template< typename FirstPinT, typename ...PinsT >
@@ -214,20 +214,20 @@ namespace BareCpper
 
 #if !DOXYGEN ///< Platform specific interface definitions
 
-	#if _AVR_IOM328P_H_ //Defined by #include <avr/io.h>?        
-		#include "ATmega/Gpio_ATmega328P.hpp" ///< Definitions for ATmega328
-	#endif
-
-    #ifdef NRF52
-        #include "nRF52/Gpio_nRF52832.hpp"
-    #endif
+#   if _AVR_IOM328P_H_ //Defined by #include <avr/io.h>?        
+#       include "ATmega/Gpio_ATmega328P.hpp" ///< Definitions for ATmega328
+#   elif NRF52
+#       include "nRF52/Gpio_nRF52832.hpp"
+#   elif __SAMD51__
+#       include "ATsamd/Gpio_ATsam5x.hpp"
+#   endif
 
 #endif
 
 namespace BareCpper
 {
-    static_assert(mask<Pin0>() != mask<Pin1>(), "mask<PinA> != mask<PinB>() implementation error");
-    static_assert((mask<Pin0>() | mask<Pin1>()) == mask<Pins<Pin0,Pin1>>(), "mask<Pins>( implementation error");
+    static_assert(mask<Port<0>::Pin<0>>() != mask<Port<0>::Pin<1>>(), "mask<PinA> != mask<PinB>() implementation error");
+    static_assert((mask<Port<0>::Pin<0>>() | mask<Port<0>::Pin<1>>()) == mask<Pins<Port<0>::Pin<0>, Port<0>::Pin<1>>>(), "mask<Pins>( implementation error");
 
 } //END: BareCpper
 
