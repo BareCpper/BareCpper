@@ -9,7 +9,7 @@
 #ifndef BARECPPER_GPIO_H_
 #define BARECPPER_GPIO_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include "Common.hpp"
 
 /** Each GPIO port drives 8, 16, 32 or so pins and is controlled by three registers in common. 
@@ -59,6 +59,14 @@ namespace BareCpper
     template< typename PinT > struct PinN<29u, PinT> { typedef PinT Pin29; };
     template< typename PinT > struct PinN<30u, PinT> { typedef PinT Pin30; };
     template< typename PinT > struct PinN<31u, PinT> { typedef PinT Pin31; };
+    template< typename PinT > struct PinN<32u, PinT> { typedef PinT Pin32; };
+    template< typename PinT > struct PinN<33u, PinT> { typedef PinT Pin33; };
+    template< typename PinT > struct PinN<34u, PinT> { typedef PinT Pin34; };
+    template< typename PinT > struct PinN<35u, PinT> { typedef PinT Pin35; };
+    template< typename PinT > struct PinN<36u, PinT> { typedef PinT Pin36; };
+    template< typename PinT > struct PinN<37u, PinT> { typedef PinT Pin37; };
+    template< typename PinT > struct PinN<38u, PinT> { typedef PinT Pin38; };
+    template< typename PinT > struct PinN<39u, PinT> { typedef PinT Pin39; };
 
 
    // template<bool> struct Valid; ///< SFINAE
@@ -102,32 +110,38 @@ namespace BareCpper
 
 
     template< size_t FirstIndex, typename ...PinsT >
-    struct SequencePortPinsN;
+    struct PinsSequenceN;
 
     template< size_t FirstIndex, typename FirstPinT, typename ...PinsT >
-    struct SequencePortPinsN< FirstIndex, FirstPinT, PinsT...>
+    struct PinsSequenceN< FirstIndex, FirstPinT, PinsT...>
         : PinN< FirstIndex, FirstPinT >
-        , SequencePortPinsN< FirstIndex + 1U, PinsT... >
+        , PinsSequenceN< FirstIndex + 1U, PinsT... >
     {
     };
 
     template< size_t FirstIndex, typename FirstPinT>
-    struct SequencePortPinsN< FirstIndex, FirstPinT >
+    struct PinsSequenceN< FirstIndex, FirstPinT >
         : PinN< FirstIndex, FirstPinT >
     {
     };
 
     template< typename ...PinsT >
-    using SequencePortPins = SequencePortPinsN< 0, PinsT... >;
+    using PinsSequence = PinsSequenceN< 0, PinsT... >;
 
     /** Brings a collection of Pins into a set
     * @warning All pins must reside on the same port
     */
     template< typename ...PinsT >
     struct Pins
-        : SequencePortPins< PinsT... >
+        : PinsSequence< PinsT... >
     {
-        //using Input = SequencePortPins< typename PinsT::Input... >;
+        //using Input = PinsSequence< typename PinsT::Input... >;
+
+        template< typename PinT >
+        constexpr static uint8_t index()
+        {
+            return IndexOf<PinT, PinsT...>::value;
+        }
     };
 
     template< size_t PortIndex>

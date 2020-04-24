@@ -8,6 +8,7 @@
 #define BARECPPER_COMMON_H_
 
 #include <cstdint>
+#include <type_traits> //< std::integral_constant
 #include "Delay.hpp" //< BareCpper::delay
 
 namespace BareCpper
@@ -95,6 +96,23 @@ namespace BareCpper
 
         return false;
     }
+
+    template <typename... >
+    struct IndexOf;
+
+    /** Specialisation of found type-index
+    */
+    template <typename FindT, typename... RemainT>
+    struct IndexOf<FindT, FindT, RemainT...>
+        : std::integral_constant<size_t, 0>
+    {};
+
+    /** Recursive search for type-index 
+    */
+    template <typename FindT, typename FirstT, typename... RemainT>
+    struct IndexOf<FindT, FirstT, RemainT...>
+        : std::integral_constant<size_t, 1 + IndexOf<FindT, RemainT...>::value>
+    { };
 
 } //END: BareCpper
 
