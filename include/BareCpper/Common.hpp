@@ -104,14 +104,14 @@ namespace BareCpper
     */
     template <typename FindT, typename... RemainT>
     struct IndexOf<FindT, FindT, RemainT...>
-        : std::integral_constant<size_t, 0>
+        : std::integral_constant<std::size_t, 0>
     {};
 
     /** Recursive search for type-index 
     */
     template <typename FindT, typename FirstT, typename... RemainT>
     struct IndexOf<FindT, FirstT, RemainT...>
-        : std::integral_constant<size_t, 1 + IndexOf<FindT, RemainT...>::value>
+        : std::integral_constant<std::size_t, 1 + IndexOf<FindT, RemainT...>::value>
     { };
 
 } //END: BareCpper
