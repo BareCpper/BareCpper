@@ -4,6 +4,9 @@
 #  error "Include <BareCpper/CycleCounter.h> instead of this file."
 #endif
 
+#ifndef F_CPU
+# error "Macro F_CPU must be defined"
+#endif
 
 namespace BareCpper
 {
