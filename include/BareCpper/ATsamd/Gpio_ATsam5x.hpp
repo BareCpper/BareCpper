@@ -48,14 +48,14 @@
 
 namespace BareCpper {
 
-    template<> template<size_t PinIndex>
-    struct PortPins<0>::Pin ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /**<PinIndex, Valid<(0 <= PinIndex && PinIndex <= 31)>*/
+    template<size_t PortIndex> template<size_t PinIndex>
+    struct PortPins<PortIndex>::Pin ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /**<PinIndex, Valid<(0 <= PinIndex && PinIndex <= 31)>*/
     {
-        constexpr static uint8_t port = 0U;
+        constexpr static uint8_t port = PortIndex;
         constexpr static uint8_t pin = PinIndex;
         constexpr static PortRegister_t mask = (PortRegister_t(1U) << PinIndex);
 
-        using Input = InputPin<PortPins<0>::Pin<PinIndex> >;
+        using Input = InputPin<PortPins<PortIndex>::Pin<PinIndex> >;
     };
   
     template<>
