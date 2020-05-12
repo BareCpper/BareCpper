@@ -8,6 +8,7 @@
 #endif
 
 #include <cstring> //< std::memcpy
+#include <algorithm> //< std::min, std:max
 
 namespace BareCpper
 {
