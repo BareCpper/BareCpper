@@ -43,7 +43,7 @@ void I2C_0_example( void )
 #define TWI_SEXTTOEN 0
 #define TWI_LOWTOUTEN 0
 #define TWI_INACTOUT 0x0
-#define TWI_SDAHOLD 0x2
+#define TWI_SDAHOLD 0 // @todo 0x2
 #define TWI_RUNSTDBY 0
 #define TWI_DEBUG_STOP_MODE 0
 #define TWI_SPEED 0x00 // Speed: Standard/Fast mode
@@ -225,10 +225,12 @@ namespace BareCpper
             auto busIsIdle = [hw = hw_]() -> bool { return (hw->STATUS.bit.BUSSTATE == SERCOM_I2CM_STATUS_BUSSTATE_IDLE);  };
             if( !busIsIdle() )
             {
+#if 0 //< Can we reset the BNO055 via the bus?
                 //SERCOM_CRITICAL_SECTION_ENTER();
                 hw_->CTRLB.bit.CMD = SERCOM_I2CM_CTRLB_CMD_STOP;
                 while( hw_->SYNCBUSY.bit.SYSOP ); //< Wait for SYSOP
                 //SERCOM_CRITICAL_SECTION_LEAVE();
+#endif
 
                 /// @todo BNO055 incomplete stops this so Timeouts per _i2c_m_enable_implementation? 
                 bool okBusIdle = pollForCondition( busIsIdle, 100, CycleCounter(), CycleCounter::nsToTicks( 1000 ) );
@@ -254,11 +256,11 @@ namespace BareCpper
             return (transferStatus == Status::Success) ? static_cast<int32_t>(bufferLength) : static_cast<int32_t>(transferStatus);
         }
 
-        int32_t writeAsync( const uint8_t* const buffer, const uint16_t bufferLength )
+        int32_t writeAsync( const uint8_t* const buffer, const uint16_t bufferLength, const bool stop = true )
         {
             Message message = {};
             message.address = slaveAddress_;
-            message.flags.bit.STOP = true;
+            message.flags.bit.STOP = stop;
             message.bufferLength = bufferLength;
             message.buffer = const_cast<uint8_t*>(buffer); ///< @todo Use union for read/write message types to remove cast
             const Status transferStatus = asyncTransfer( message );
@@ -515,7 +517,6 @@ namespace BareCpper
 
             if( !(service_.message.bufferLength && !hw_->STATUS.bit.RXNACK) )
             {
-                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_SB;  ///< Clear flag
                 return Status::NAck;
             }
 
@@ -553,26 +554,26 @@ namespace BareCpper
             // Send last byte
             while( hw_->SYNCBUSY.bit.SYSOP ); //< Wait for SYSOP
             *service_.message.buffer++ = hw_->DATA.reg;
-
-            hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_SB; ///< Clear flag
             return Status::Success;
         }
 
-        inline Status analyseFlagsSync()
+        inline Status analyseFlagsSync( const SERCOM_I2CM_INTFLAG_Type flags )
         {
             FnComplete_t fnComplete = nullptr;
             Status retVal = Status::Success;
 
-            if( hw_->INTFLAG.bit.MB ) //< Master On Bus Interrupt
+            if( flags.bit.MB ) //< Master On Bus Interrupt
             {
                 retVal = onInterruptMasterOnBus();
+                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_MB; ///< Clear flag
                 fnComplete = fnTxComplete_;
 
             }
             else 
-            if( hw_->INTFLAG.bit.SB ) //< Slave On Bus Interrupt 
+            if( flags.bit.SB ) //< Slave On Bus Interrupt 
             {
                 retVal = onInterruptSlaveOnBus();
+                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_SB;  ///< Clear flag
                 fnComplete = fnRxComplete_;
             }
 
@@ -590,10 +591,9 @@ namespace BareCpper
         void onServiceError( const Status status )
         {
             service_.message.flags.bit.BUSY = false;
-            if( fnError_ ) //< @todo If there is no error callback we will hang in an error condition?
+            if( fnError_ ) 
             {
                 fnError_( *this, status );
-                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_ERROR; //< Clear flag
             }
         }
 
@@ -604,12 +604,39 @@ namespace BareCpper
             if( hw_->INTFLAG.bit.ERROR )
             {
                 onServiceError( Status::BusError );
+                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_ERROR; //< Clear flag
+                return;
             }
 
-            const Status retVal = analyseFlagsSync();
-            if( retVal != Status::Success )
+            FnComplete_t fnComplete = nullptr;
+            Status retVal = Status::Success;
+
+            if( hw_->INTFLAG.bit.MB ) //< Master On Bus Interrupt
+            {
+                retVal = onInterruptMasterOnBus();
+                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_MB; ///< Clear flag
+                fnComplete = fnTxComplete_;
+
+            }
+            else
+            if( hw_->INTFLAG.bit.SB ) //< Slave On Bus Interrupt 
+            {
+                retVal = onInterruptSlaveOnBus();
+                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_SB;  ///< Clear flag
+                fnComplete = fnRxComplete_;
+            }
+
+            if(retVal != Status::Success)
             {
                 onServiceError( retVal );
+                 return;
+            }
+
+            if( fnComplete
+                && !service_.message.flags.bit.SILENT
+                && !service_.message.flags.bit.BUSY )
+            {
+                fnComplete( *this );
             }
         }
 
