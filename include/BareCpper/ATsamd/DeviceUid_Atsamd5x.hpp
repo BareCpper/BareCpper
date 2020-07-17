@@ -13,10 +13,9 @@
 namespace BareCpper
 {
 
-    inline IoDescriptor DeviceUid::io()
-    {
-        return {
-            [](const IoDescriptor& descriptor, uint8_t* const buffer, const uint16_t bufferLength) ->int32_t
+    inline DeviceUid::DeviceUid()
+        : IoDescriptor{
+            [](IoDescriptor& descriptor, uint8_t* const buffer, const uint16_t bufferLength) ->int32_t
             {
                 /** @see http://ww1.microchip.com/downloads/en/DeviceDoc/60001507E.pdf
                 * Chapter: 9.6 Serial Number 
@@ -31,7 +30,7 @@ namespace BareCpper
                 return sizeof(serialNumber); //< Read result
             },  
             nullptr
-        };
-    }
+        }
+    {}
 
 } //END: BareCpper

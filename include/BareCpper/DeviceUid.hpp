@@ -7,11 +7,10 @@ namespace BareCpper
 {
     /** Device unique identifier
     */
-    class DeviceUid
+    class DeviceUid : public IoDescriptor
     {
     public:
-
-        IoDescriptor io();
+        DeviceUid();
 
     };
 
