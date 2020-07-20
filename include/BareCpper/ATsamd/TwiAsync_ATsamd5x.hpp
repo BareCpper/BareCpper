@@ -63,7 +63,7 @@ void I2C_0_example( void )
 #define CONF_GCLK_SERCOM2_CORE_SRC GCLK_PCHCTRL_GEN_GCLK1
 #endif
 #ifndef CONF_GCLK_SERCOM2_SLOW_SRC
-#define CONF_GCLK_SERCOM2_SLOW_SRC GCLK_PCHCTRL_GEN_GCLK1
+#define CONF_GCLK_SERCOM2_SLOW_SRC GCLK_PCHCTRL_GEN_GCLK3 ///< "36.6.3.1 SMBus" GCLK_SERCOM_SLOW clock is used to accurately time the time-out and must be configured to use a 32 KHz oscillator
 #endif
 
 #ifndef SERCOM_I2CM_CTRLB_CMD_STOP
