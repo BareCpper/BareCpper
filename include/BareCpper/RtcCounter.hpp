@@ -29,7 +29,7 @@ namespace BareCpper {
 
         /** Initializing the RTC driver instance.
         */
-        void initialise(void);
+        inline void initialise(void);
 
         /** Start the counter. */
         inline void start(void);
