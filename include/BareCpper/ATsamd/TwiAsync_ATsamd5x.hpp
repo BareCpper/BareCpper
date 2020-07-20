@@ -36,14 +36,14 @@ void I2C_0_example( void )
 #endif
 
 #define TWI_ENABLE 1
-#define TWI_BAUD 100000
+#define TWI_BAUD 400000
 #define TWI_ADVANCED_CONFIG 0
 #define TWI_TRISE 215
 #define TWI_MEXTTOEN 0
 #define TWI_SEXTTOEN 0
 #define TWI_LOWTOUTEN 0
-#define TWI_INACTOUT 0x0
-#define TWI_SDAHOLD 0 // @todo 0x2
+#define TWI_INACTOUT 0x0 //< @todo 0x03 to enable inactive timeout
+#define TWI_SDAHOLD 0x2 //< SDA hold time with respect to the negative edge of SCL: 0x2=300-600ns hold time
 #define TWI_RUNSTDBY 0
 #define TWI_DEBUG_STOP_MODE 0
 #define TWI_SPEED 0x00 // Speed: Standard/Fast mode
@@ -226,10 +226,7 @@ namespace BareCpper
             if( !busIsIdle() )
             {
 #if 0 //< Can we reset the BNO055 via the bus?
-                //SERCOM_CRITICAL_SECTION_ENTER();
-                hw_->CTRLB.bit.CMD = SERCOM_I2CM_CTRLB_CMD_STOP;
-                while( hw_->SYNCBUSY.bit.SYSOP ); //< Wait for SYSOP
-                //SERCOM_CRITICAL_SECTION_LEAVE();
+                stop();
 #endif
 
                 /// @todo BNO055 incomplete stops this so Timeouts per _i2c_m_enable_implementation? 
@@ -243,12 +240,12 @@ namespace BareCpper
             return enableAsync();
         }
 
-        int32_t readAsync( uint8_t* const buffer, const uint16_t bufferLength )
+        int32_t readAsync( uint8_t* const buffer, const uint16_t bufferLength, const bool doStop = true )
         {
             Message message = {};
             message.address = slaveAddress_;
             message.flags.bit.READ = true;
-            message.flags.bit.STOP = true;
+            message.flags.bit.STOP = doStop;
             message.bufferLength = bufferLength;
             message.buffer = buffer;
             const Status transferStatus = asyncTransfer( message );
@@ -256,16 +253,28 @@ namespace BareCpper
             return (transferStatus == Status::Success) ? static_cast<int32_t>(bufferLength) : static_cast<int32_t>(transferStatus);
         }
 
-        int32_t writeAsync( const uint8_t* const buffer, const uint16_t bufferLength, const bool stop = true )
+        int32_t writeAsync( const uint8_t* const buffer, const uint16_t bufferLength, const bool doStop = true )
         {
             Message message = {};
             message.address = slaveAddress_;
-            message.flags.bit.STOP = stop;
+            message.flags.bit.STOP = doStop;
             message.bufferLength = bufferLength;
             message.buffer = const_cast<uint8_t*>(buffer); ///< @todo Use union for read/write message types to remove cast
             const Status transferStatus = asyncTransfer( message );
 
             return (transferStatus == Status::Success) ? static_cast<int32_t>(bufferLength) : static_cast<int32_t>(transferStatus);
+        }
+
+        /* Release/Stop the I2C bus
+        */
+        void stop()
+        {
+            while( hw_->SYNCBUSY.bit.SYSOP ); //< Wait for SYSOP
+
+            //SERCOM_CRITICAL_SECTION_ENTER();
+            hw_->CTRLB.bit.CMD = SERCOM_I2CM_CTRLB_CMD_STOP;
+            while( hw_->SYNCBUSY.bit.SYSOP ); //< Wait for SYSOP
+            //SERCOM_CRITICAL_SECTION_LEAVE();
         }
 
     private:
@@ -323,7 +332,14 @@ namespace BareCpper
              *                                                i2c_scl_freq
              * @note BAUDLOW only used for odd BAUD + BAUDLOW
              */
+#if 0
             const uint8_t baudBit = TWI_SERCOM_FREQ_REF / (2 * TWI_BAUD) - 1;
+#else
+            const uint32_t clkrate = TWI_SERCOM_FREQ_REF;
+            const uint32_t baudrate = TWI_BAUD;
+            const uint32_t trise = TWI_TRISE;
+            const uint8_t baudBit = static_cast<uint32_t>((clkrate - 10 * baudrate - baudrate * clkrate * (trise * 0.000000001)) / (2 * baudrate));
+#endif
 
             //SERCOM_CRITICAL_SECTION_ENTER();
             hw_->CTRLA.reg = SERCOM_I2CM_CTRLA_MODE_I2C_MASTER
@@ -452,9 +468,9 @@ namespace BareCpper
 
             if( hw_->STATUS.bit.ARBLOST ) // tx error
             {
-                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_MB; ///< Clear flag
                 service_.message.flags.bit.FAIL = true;
                 service_.message.flags.bit.BUSY = false;
+                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_MB; ///< Clear flag
                 return hw_->STATUS.bit.BUSERR ? Status::BusError : Status::BadAddress;
             }
 
@@ -468,10 +484,11 @@ namespace BareCpper
 
                 if( service_.message.flags.bit.STOP )
                 {
-                    //SERCOM_CRITICAL_SECTION_ENTER();
-                    hw_->CTRLB.bit.CMD = SERCOM_I2CM_CTRLB_CMD_STOP;
-                    while( hw_->SYNCBUSY.bit.SYSOP ); //< Wait for SYSOP
-                    //SERCOM_CRITICAL_SECTION_LEAVE();
+                    stop();
+                }
+                else // @todo Not in Atmel Start, Necessary?
+                {
+                    hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_MB; ///< Clear flag
                 }
 
                 service_.message.flags.bit.BUSY = false;
@@ -492,10 +509,11 @@ namespace BareCpper
             {
                 if( service_.message.flags.bit.STOP )
                 {
-                    //SERCOM_CRITICAL_SECTION_ENTER();
-                    hw_->CTRLB.bit.CMD = SERCOM_I2CM_CTRLB_CMD_STOP;
-                    while( hw_->SYNCBUSY.bit.SYSOP ); //< Wait for SYSOP
-                    //SERCOM_CRITICAL_SECTION_LEAVE();
+                    stop();
+                }
+                else // @todo Not in Atmel Start, Necessary?
+                {
+                    hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_MB; ///< Clear flag
                 }
 
                 service_.message.flags.bit.BUSY = false;
@@ -539,12 +557,10 @@ namespace BareCpper
                     //SERCOM_CRITICAL_SECTION_ENTER();
                     hw_->CTRLB.bit.SMEN = false;
                     while( hw_->SYNCBUSY.bit.SYSOP ); //< Wait for SYSOP
+                    //SERCOM_CRITICAL_SECTION_LEAVE();
 
                     /// @todo Do we need to do SMEN + CMD operations separately or not?
-
-                    hw_->CTRLB.bit.CMD = SERCOM_I2CM_CTRLB_CMD_STOP;
-                    while( hw_->SYNCBUSY.bit.SYSOP ); //< Wait for SYSOP
-                    //SERCOM_CRITICAL_SECTION_LEAVE();
+                    stop();
                 }
 
                 service_.message.flags.bit.BUSY = false;
@@ -555,37 +571,6 @@ namespace BareCpper
             while( hw_->SYNCBUSY.bit.SYSOP ); //< Wait for SYSOP
             *service_.message.buffer++ = hw_->DATA.reg;
             return Status::Success;
-        }
-
-        inline Status analyseFlagsSync( const SERCOM_I2CM_INTFLAG_Type flags )
-        {
-            FnComplete_t fnComplete = nullptr;
-            Status retVal = Status::Success;
-
-            if( flags.bit.MB ) //< Master On Bus Interrupt
-            {
-                retVal = onInterruptMasterOnBus();
-                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_MB; ///< Clear flag
-                fnComplete = fnTxComplete_;
-
-            }
-            else 
-            if( flags.bit.SB ) //< Slave On Bus Interrupt 
-            {
-                retVal = onInterruptSlaveOnBus();
-                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_SB;  ///< Clear flag
-                fnComplete = fnRxComplete_;
-            }
-
-            if( (retVal == Status::Success)
-                && fnComplete
-                && !service_.message.flags.bit.SILENT
-                && !service_.message.flags.bit.BUSY )
-            {
-                fnComplete( *this );
-            }
-
-            return retVal;
         }
 
         void onServiceError( const Status status )
@@ -614,7 +599,6 @@ namespace BareCpper
             if( hw_->INTFLAG.bit.MB ) //< Master On Bus Interrupt
             {
                 retVal = onInterruptMasterOnBus();
-                hw_->INTFLAG.reg = SERCOM_I2CM_INTFLAG_MB; ///< Clear flag
                 fnComplete = fnTxComplete_;
 
             }
@@ -629,7 +613,7 @@ namespace BareCpper
             if(retVal != Status::Success)
             {
                 onServiceError( retVal );
-                 return;
+                return;
             }
 
             if( fnComplete
