@@ -27,7 +27,6 @@ void loop()
     Bare::CycleCounter timer;
     timer.reset();
 
-    const uint32_t tickbase = timer.count();
 
 #if 0
     const uint count = 100;
@@ -46,15 +45,14 @@ void loop()
 #endif
 
     //64000000 / 10 = 64000(00)
-    const uint32_t tick0 = timer.count()- tickbase;
     digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-    const uint32_t tick1 = timer.count() - tickbase;
+    const uint32_t tick1 = timer.count();
     Bare::delay(timer, Bare::CycleCounter::msToTicks(100)); // wait for a second
-    const uint32_t tick2 = timer.count() - tickbase;
+    const uint32_t tick2 = timer.count();
     digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-    const uint32_t tick3 = timer.count() - tickbase;
+    const uint32_t tick3 = timer.count();
     Bare::delay(timer, Bare::CycleCounter::msToTicks(100)); // wait for a second
-    const uint32_t tick4 = timer.count() - tickbase;
+    const uint32_t tick4 = timer.count();
 
     char buff[64];
     snprintf( buff, sizeof(buff), "%u, %u, %u, %u\n"
