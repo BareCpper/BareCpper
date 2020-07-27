@@ -220,7 +220,36 @@ namespace BareCpper
 	typedef Port<3> PortD; ///< Supported on: Atmega328p
 #endif
 	
-	
+
+    template<typename Pin_t>
+    void gpioEnableInput( const Pin_t& pin = Pin_t() );
+
+    template<typename Pin_t>
+    void gpioDirectionIn( const Pin_t& pin = Pin_t() );
+
+    template<typename Pin_t>
+    void gpioDirectionOut( const Pin_t& pin = Pin_t() );
+
+    template<typename Pin_t>
+    void gpioPullEnable( const Pin_t& pin = Pin_t() );
+
+    template<typename Pin_t>
+    void gpioPullDisable( const Pin_t& pin = Pin_t() );
+
+    template<typename Pin_t>
+    void gpioOutHigh( const Pin_t& pin = Pin_t() );
+
+    template<typename Pin_t>
+    void gpioOutLow( const Pin_t& pin = Pin_t() );
+
+    template<typename Pin_t>
+    void gpioPullUp( const Pin_t& pin = Pin_t() );
+
+    template<typename Pin_t>
+    void gpioPullDown( const Pin_t& pin = Pin_t() );
+
+    template<typename Pin_t>
+    void gpioPullOff( const Pin_t& pin = Pin_t() );
 
 	
 } //END: BareCpper

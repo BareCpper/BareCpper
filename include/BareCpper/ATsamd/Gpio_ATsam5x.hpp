@@ -233,6 +233,71 @@ namespace BareCpper {
     //class SpiMiso0 : public Port::B::Pin4 {}; //< SPI Master-In Slave-Out
     //class SpiSck0 : public Port::B::Pin5 {};
 
+
+    template<typename Pin_t>
+    void gpioEnableInput( const Pin_t& pin )
+    {
+        using ::Port;
+        PORT->Group[pin.port].PINCFG[pin.pinport].bit.INEN = true;
+    }
+
+    template<typename Pin_t>
+    void gpioDirectionIn( const Pin_t& pin )
+    {
+        using ::Port;
+        PORT->Group[pin.port].DIRCLR.reg = (1 << pin.pin); // clear DIR
+    }
+
+    template<typename Pin_t>
+    void gpioPullEnable( const Pin_t& pin )
+    {
+        using ::Port;
+        PORT->Group[pin.port].PINCFG[pin.pin].bit.PULLEN = true;
+    }
+
+    template<typename Pin_t>
+    void gpioPullDisable( const Pin_t& pin )
+    {
+        using ::Port;
+        PORT->Group[pin.port].PINCFG[pin.pin].bit.PULLEN = false;
+    }
+
+    template<typename Pin_t>
+    void gpioOutHigh( const Pin_t& pin )
+    {
+        using ::Port;
+        PORT->Group[pin.port].OUTSET.reg = pin.mask; // Drive high
+    }
+
+    template<typename Pin_t>
+    void gpioOutLow( const Pin_t& pin )
+    {
+        using ::Port;
+        PORT->Group[pin.port].OUTCLR.reg = pin.mask; // Drive low
+    }
+
+    template<typename Pin_t>
+    void gpioPullUp( const Pin_t& pin )
+    {
+        gpioDirectionIn( pin );
+        gpioPullEnable( pin );
+        gpioOutHigh( pin ); ///< OUT controls Pull High/Low
+    }
+
+    template<typename Pin_t>
+    void gpioPullDown( const Pin_t& pin )
+    {
+        gpioDirectionIn( pin );
+        gpioPullEnable( pin );
+        gpioOutLow( pin ); ///< OUT controls Pull High/Low
+    }
+
+    template<typename Pin_t>
+    void gpioPullOff( const Pin_t& pin )
+    {
+        gpioPullDisable( pin );
+    }
+
 } //END: BareCopper
 
 #endif
