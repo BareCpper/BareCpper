@@ -249,6 +249,13 @@ namespace BareCpper {
     }
 
     template<typename Pin_t>
+    void gpioDirectionOut( const Pin_t& pin )
+    {
+        using ::Port;
+        PORT->Group[pin.port].DIRSET.reg = (1 << pin.pin); // Set DIR
+    }
+
+    template<typename Pin_t>
     void gpioPullEnable( const Pin_t& pin )
     {
         using ::Port;
