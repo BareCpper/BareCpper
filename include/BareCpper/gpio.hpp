@@ -243,6 +243,12 @@ namespace BareCpper
     void gpioOutLow( const Pin_t& pin = Pin_t() );
 
     template<typename Pin_t>
+    void gpioOutSet( const bool state, const Pin_t& pin = Pin_t() )
+    {
+        state ? gpioOutHigh( pin ) : gpioOutLow( pin );
+    }
+
+    template<typename Pin_t>
     void gpioPullUp( const Pin_t& pin = Pin_t() );
 
     template<typename Pin_t>
@@ -251,6 +257,13 @@ namespace BareCpper
     template<typename Pin_t>
     void gpioPullOff( const Pin_t& pin = Pin_t() );
 
+    template<typename Pin_t>
+    void gpioPullSet( const int state, const Pin_t& pin = Pin_t() )
+    {
+        state == -1 ? gpioPullDown( pin ) :
+        state ==  1 ? gpioPullUp( pin )
+                    : gpioPullOff( pin );
+    }
 	
 } //END: BareCpper
 
