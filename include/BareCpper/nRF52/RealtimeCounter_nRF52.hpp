@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef BARECPPER_RTCCOUNTER_HPP
-#  error "Include <BareCpper/RtcCounter.hpp> instead of this file."
+#ifndef BARECPPER_REALTIMECOUNTER_HPP
+#  error "Include <BareCpper/RealtimeCounter.hpp> instead of this file."
 #endif
 
 #if !NRF52
@@ -13,12 +13,12 @@
 
 namespace BareCpper {
 
-    constexpr uint32_t RtcCounter::ticksPerSecond()
+    constexpr RealtimeCounter::Count RealtimeCounter::seconds(const size_t count)
     {
-        return 32768U;
+        return 32768U * count;
     }
 
-    void RtcCounter::initialise(void)
+    void RealtimeCounter::initialise()
     {
         // Start 32 MHz crystal oscillator
         NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
@@ -33,17 +33,17 @@ namespace BareCpper {
         NRF_RTC2->CC[0] = 1;    
     }
 
-    void RtcCounter::start(void)
+    void RealtimeCounter::start()
     {
         NRF_RTC2->TASKS_START = 1;
     }
 
-    void RtcCounter::stop(void)
+    void RealtimeCounter::stop()
     {
         NRF_RTC2->TASKS_START = 0;
     }
 
-    uint32_t RtcCounter::count(void)
+    RealtimeCounter::Count RealtimeCounter::count()
     {
         return NRF_RTC2->COUNTER;
     }

@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef BARECPPER_RTCCOUNTER_HPP
-#  error "Include <BareCpper/RtcCounter.hpp> instead of this file."
+#ifndef BARECPPER_REALTIMECOUNTER_HPP
+#  error "Include <BareCpper/RealtimeCounter.hpp> instead of this file."
 #endif
 
 #if !__SAMD51__
@@ -12,12 +12,12 @@
 
 namespace BareCpper {
 
-    constexpr uint32_t RtcCounter::ticksPerSecond()
+    constexpr RealtimeCounter::Count RealtimeCounter::seconds( const size_t count )
     {
-        return 32768U;
+        return 32768U * count;
     }
 
-    void RtcCounter::initialise(void)
+    void RealtimeCounter::initialise()
     {
         // turn on digital interface clocks
         MCLK->APBAMASK.bit.OSC32KCTRL_ = 1;
@@ -51,19 +51,19 @@ namespace BareCpper {
         while (RTC->MODE0.SYNCBUSY.bit.COUNTSYNC);
     }
 
-    void RtcCounter::start(void)
+    void RealtimeCounter::start()
     {
         RTC->MODE0.CTRLA.bit.ENABLE = 1;
         while (RTC->MODE0.SYNCBUSY.bit.ENABLE);// wait for RTC settings for COUNTSYNC and ENABLE to be synced
     }
 
-    void RtcCounter::stop(void)
+    void RealtimeCounter::stop()
     {
         RTC->MODE0.CTRLA.bit.ENABLE = 0;
         while (RTC->MODE0.SYNCBUSY.bit.ENABLE); // wait for RTC settings for COUNTSYNC and ENABLE to be synced
     }
 
-    uint32_t RtcCounter::count(void)
+    RealtimeCounter::Count RealtimeCounter::count()
     {
         while (RTC->MODE0.SYNCBUSY.bit.COUNT);                    // wait for COUNT sync before reading per SAMD5xE5x Family Datasheet...
         return RTC->MODE0.COUNT.reg;                                              //  then return it.
