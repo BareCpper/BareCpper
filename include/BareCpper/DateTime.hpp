@@ -121,7 +121,7 @@ namespace BareCpper {
             using namespace std::chrono;
             using Days = duration<int, ratio_multiply<hours::period, ratio<24>>>;
         
-            RealtimeClock::duration timeSinceEpoch = timePoint.time_since_epoch(); ///< Internal time-point from RealtimeClock::epoch()
+            RealtimeClock::epoch_duration timeSinceEpoch = timePoint.time_since_epoch(); ///< Internal time-point from RealtimeClock::epoch()
             
             // t is time duration since Epoch (e.g.1970-01-01 or 2000-01-01)  
             Days daysSinceEpoch = std::chrono::duration_cast<Days>(timeSinceEpoch); // d is days since Epoch (e.g.1970-01-01 or 2000-01-01)      
