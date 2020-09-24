@@ -13,10 +13,10 @@ namespace BareCpper {
         using Count = std::uint32_t;
 
         /** Count of clock tick per second
-        * @param[in]  count  Count of seconds to return count for
+        * @param[in]  duration  Duration of seconds to return count for
         * @return 32768 * count
         */
-        static constexpr Count seconds(const size_t count) noexcept;
+        static constexpr Count seconds(const size_t duration) noexcept;
 
     public:
 

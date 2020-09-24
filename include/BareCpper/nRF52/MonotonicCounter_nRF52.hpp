@@ -13,9 +13,9 @@
 
 namespace BareCpper {
 
-    constexpr MonotonicCounter::Count MonotonicCounter::seconds(const size_t count)
+    constexpr MonotonicCounter::Count MonotonicCounter::seconds(const size_t duration)
     {
-        return 32768U * count;
+        return 32768U * duration;
     }
 
     void MonotonicCounter::initialise()
