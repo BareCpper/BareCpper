@@ -53,6 +53,8 @@ namespace BareCpper
 #include "nRF52/CycleCounter_nRF52.hpp"
 #elif __SAMD51__
 #include "ATsamd/CycleCounter_ATsamd5x.hpp"
+#elif defined(_WIN32)
+#include "Windows/CycleCounter_Windows.hpp"
 #endif
 
 #endif
