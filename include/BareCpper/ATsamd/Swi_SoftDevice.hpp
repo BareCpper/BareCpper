@@ -151,10 +151,11 @@ namespace BareCpper
 		writeSize += packet->wlen; //evaluate writeSize + wlen variable
  
 		Swi::start_stop_cond(); //start condition --> GO TO Swi::start_stop_cond()
-		Swi::send_bytes(writeSize, &cmdWriteBuffer[0]); //transmit data bytes to the EEPROM --> GO TO Swi::send_bytes()
+		Status sendRet = Swi::send_bytes(writeSize, &cmdWriteBuffer[0]); //transmit data bytes to the EEPROM --> GO TO Swi::send_bytes()
 		Swi::start_stop_cond();	
 		//stop condition --> GO TO Swi::start_stop_cond()
-		return Status::Success; //return success code
+
+		return sendRet; //return status code
 	}
 
 	inline Swi::Status Swi::read(const Swi::Package_t* packet)
@@ -175,20 +176,31 @@ namespace BareCpper
 		if (packet->memoryAddressLength) //perform dummy write
 		{
 			cmdWriteBuffer[0] &= 0xFE; //bitwiseAND cmdWriteBuffer array with 0xFEh
-			Swi::send_bytes(writeSize, &cmdWriteBuffer[0]); //send device address byte with R/W bit = 1 --> GO TO Swi::send_bytes()
+			const Status addrRet = Swi::send_bytes(writeSize, &cmdWriteBuffer[0]); //send device address byte with R/W bit = 1 --> GO TO Swi::send_bytes()
 			Swi::start_stop_cond(); //start condition --> GO TO Swi::start_stop_cond()
+
+			if(addrRet != Status::Success)
+				return addrRet;
 		}
 
 		cmdWriteBuffer[0] |= 0x01; //cmdWriteBuffer ORed with 0x01 or set the R/W bit = 1 in the device address byte
-		Swi::send_bytes((writeSize - packet->memoryAddressLength), &cmdWriteBuffer[0]); //send device address byte --> GO TO Swi::send_bytes()
+		const Status reqRet = Swi::send_bytes((writeSize - packet->memoryAddressLength), &cmdWriteBuffer[0]); //send device address byte --> GO TO Swi::send_bytes()
 
+		if(reqRet != Status::Success)
+			return reqRet;
+
+		Status recieveRet;
 		if (!packet->chk_ack_only_flag) //if the EEPROM ACKs the device address byte
 		{
-			Swi::receive_bytes(packet->rlen, packet->buffer); //perform read operation --> GO TO Swi::receive_bytes()
+			recieveRet = Swi::receive_bytes(packet->rlen, packet->buffer); //perform read operation --> GO TO Swi::receive_bytes()
+		}
+		else
+		{
+			recieveRet = Status::Success;
 		}
 
 		Swi::start_stop_cond(); //stop condition --> GO TO Swi::start_stop_cond() 
-		return Status::Success; //return success code
+		return recieveRet; //return success code
 	}
 
 	inline Swi::Status Swi::send_bytes(uint8_t count, uint8_t* buffer)
