@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include "Common.hpp"
+#include "Sub0Std.hpp"
 
 /** Each GPIO port drives 8, 16, 32 or so pins and is controlled by three registers in common. 
 @note Some platforms also allow extra port capability as exetension to these:
@@ -221,41 +222,41 @@ namespace BareCpper
 #endif
 	
 
-    template<typename Pin_t>
-    void gpioEnableInput( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> void gpioEnableInput( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioEnableInput() {}
 
-    template<typename Pin_t>
-    void gpioDirectionIn( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t>  void gpioDirectionIn( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioDirectionIn() {}
 
-    template<typename Pin_t>
-    void gpioDirectionOut( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t>  void gpioDirectionOut( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioDirectionOut() {}
 
-    template<typename Pin_t>
-    void gpioPullEnable( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t>  void gpioPullEnable( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioPullEnable() {}
 
-    template<typename Pin_t>
-    void gpioPullDisable( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t>  void gpioPullDisable( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioPullDisable() {}
 
-    template<typename Pin_t>
-    void gpioOutHigh( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> void gpioOutHigh( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioOutHigh() {}
 
-    template<typename Pin_t>
-    void gpioOutLow( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t>  void gpioOutLow( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioOutLow() {}
 
-    template<typename Pin_t>
-    void gpioOutSet( const bool state, const Pin_t& pin = Pin_t() )
+    template<typename Pin_t> void gpioOutSet( const bool state, const Pin_t& pin = Pin_t() )
     {
         state ? gpioOutHigh( pin ) : gpioOutLow( pin );
     }
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioPullUp(const bool state) {}
+                             
+    template<typename Pin_t> void gpioPullUp( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioPullUp() {}
 
-    template<typename Pin_t>
-    void gpioPullUp( const Pin_t& pin = Pin_t() );
-
-    template<typename Pin_t>
-    void gpioPullDown( const Pin_t& pin = Pin_t() );
-
-    template<typename Pin_t>
-    void gpioPullOff( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> void gpioPullDown( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioPullDown() {}
+                             
+    template<typename Pin_t> void gpioPullOff( const Pin_t& pin = Pin_t() );
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioPullOff() {}
 
     template<typename Pin_t>
     void gpioPullSet( const int state, const Pin_t& pin = Pin_t() )
@@ -264,6 +265,7 @@ namespace BareCpper
         state ==  1 ? gpioPullUp( pin )
                     : gpioPullOff( pin );
     }
+    template<typename Pin_t> sub0::if_void<Pin_t> gpioPullSet() {}
 	
 } //END: BareCpper
 
