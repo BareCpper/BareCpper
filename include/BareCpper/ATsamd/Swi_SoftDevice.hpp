@@ -72,6 +72,7 @@ namespace BareCpper
 	*/
 	inline void drive_si_low(const uint8_t iPort, const uint8_t iPin)
 	{
+		using ::Port;
 		PORT->Group[iPort].PINCFG[iPin].reg = (uint8_t)(PORT_PINCFG_INEN);
 		PORT->Group[iPort].DIRSET.reg = (1 << iPin); // Set pin to output mode
 		PORT->Group[iPort].OUTCLR.reg = (1 << iPin); // Drive low
@@ -82,6 +83,7 @@ namespace BareCpper
 	*/
 	inline void release_si(const uint8_t iPort, const uint8_t iPin)
 	{
+		using ::Port;
 		// @note External pull-up is in place so we don't need to pull high
 		PORT->Group[iPort].PINCFG[iPin].reg = (uint8_t)(PORT_PINCFG_INEN);// Set pin to input
 		PORT->Group[iPort].DIRCLR.reg = (1 << iPin); // Set pin to input mode
@@ -92,6 +94,7 @@ namespace BareCpper
 	*/
 	inline bool readIn(const uint8_t iPort, const uint8_t iPin)
 	{
+		using ::Port;
 		return (PORT->Group[iPort].IN.reg & (1 << iPin)) != 0;
 	}
 
@@ -100,6 +103,7 @@ namespace BareCpper
 	*/
 	inline void enableOutput(const uint8_t iPort, const uint8_t iPin)
 	{
+		using ::Port;
 		// Set pin to input mode
 		PORT->Group[iPort].PINCFG[iPin].reg = (uint8_t)(PORT_PINCFG_INEN);
 		drive_si_low(iPort, iPin);
@@ -110,6 +114,7 @@ namespace BareCpper
 	*/
 	inline void enableInput(const uint8_t iPort, const uint8_t iPin)
 	{
+		using ::Port;
 		PORT->Group[iPort].PINCFG[iPin].reg = (uint8_t)(PORT_PINCFG_INEN);
 		release_si(iPort, iPin);
 	}
