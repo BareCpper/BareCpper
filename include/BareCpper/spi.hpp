@@ -1,279 +1,156 @@
-/*
- * Serial_SPI.hpp
- *
- * Created: 10/02/2013 15:12:58
- *  Author: CraigH
- */
-#ifndef BARECPPER_SPI_H_
-#define BARECPPER_SPI_H_
+#ifndef BARECPPER_SPI_HPP_
+#define BARECPPER_SPI_HPP_
 
-#include <cstdint> //< uint8_t
+#include "Io.hpp"
 
 namespace BareCpper
 {
-
-    //We allow disabling implementation if they are currently not compatible
-    // with a platform by defining these constants as 0 i.e. '#define IMPL_SPI_Software 0'. 
-    // May also aid compile times and code size
-
-#if !defined(IMPL_SPI_Software)
-#	define IMPL_SPI_Software 1 //< Enable/disable implementation support
-#endif
-
-#if !defined(SPI_IMPL_HARDWARE)
-// @todo SPIE is Atmel specific
-#	define SPI_IMPL_HARDWARE (defined(SPIE))//< Enable/disable implementation support
-#endif
-
-#if !defined(IMPL_SPI_ArduinoSw)
-#	define IMPL_SPI_ArduinoSw (defined(ARDUINO)) //< Enable/disable implementation support
-#endif
-
-#ifndef IMPL_SPI_Arduino
-// @todo SPIE is Atmel specific
-#	define IMPL_SPI_Arduino (defined(ARDUINO) && defined(SPIE)) //< Enable/disable implementation support
-#endif
-
-#if !defined(SPIE) && (IMPL_SPI_Arduino || SPI_IMPL_HARDWARE)
-#error "Hardware SPI is not supported on the current device, "
-#endif
-
-#if !defined(ARDUINO) && (IMPL_SPI_Arduino || IMPL_SPI_ArduinoSw)
-#error "Arduino SPI implementation is not available, requires Arduino Library and ARDUINO define"
-#endif
-
-/** @{ Each implementation is tagged with a Serial_SPI sub-type implementation
-    \remarks Not all processors have Hardware SPI/UART and a software implementation may be used in its place
-*/
-#if IMPL_SPI_Software
-/** Fast software SPI via direct port manipulation and MSBFIRST only support at present
-*/
-    struct SPI_Software;
-#endif
-
-#if IMPL_SPI_ArduinoSw
-
-    /** Arduino implementation of software SPI via the extremely slow Arduino IO library
+    /** Defines the bit-order for serial communication
+        \remarks SpiBitOrder_MSBFirst MSB appears to be more common but check device documentation etc.
     */
-    struct SPI_ArduinoSW;
-#endif
-
-#if SPI_IMPL_HARDWARE
-    /** Hardware SPI implementation
-    */
-    struct SPI_Hardware;
-#endif
-
-#if IMPL_SPI_Arduino
-    /** Arduino hardware implementation using the slow Arduino library
-    */
-    struct SPI_HardwareSlow;
-#endif
-
-    /// @note We always default to hardware support where available
-#if SPI_IMPL_HARDWARE
-    typedef  SPI_Hardware SPI_Default;
-#elif SPI_IMPL_SOFTWARE
-    typedef SPI_Software SPI_Default;
-#endif
-
-    /// }@
-
-
-     /** Defines the bit-order for serial communication
-         \remarks SPIBitOrder_MSBFirst MSB appears to be more common but check device documentation etc.
-     */
-    enum eSPIBitOrder : uint8_t
+    enum class SpiBitOrder : uint8_t
     {
-        SPIBitOrder_LSBFirst = 0, //< Bits are output from right to left (binary 1 '00000001' will output bit value 1 first)
-        SPIBitOrder_MSBFirst = 1, //< Bits are output from left to right (binary 1 '00000001' will output bit value 0 first)
+          LSBFirst = 0 ///< Bits are output from right to left (binary 1 '00000001' will output bit value 1 first)
+        , MSBFirst = 1 ///< Bits are output from left to right (binary 1 '00000001' will output bit value 0 first)
     };
 
-    /* Register (SPCR).:
-        CPOL The clock polarity is specified by the CPOL control bit
-        CPHA clock phase control bit selects one of the two fundamentally different transfer formats
+    /* Determines the polarity of the clock (CPOL)
     */
-    enum eSPIPolarity : uint8_t
+    enum class SpiClockPolarity : uint8_t
     {
-        SPIPolarity_0 = 0, //idle low, active high
-        SPIPolarity_1 = 1, //<idle high, active low		
+        Cpol0 = 0, ///< idle low, active high
+        Cpol1 = 1, ///< idle high, active low		
     };
 
-    enum eSPIPhase : uint8_t
-    {
-        SPIPhase_0 = 0, //< http://www.atmel.com/Images/doc2585.pdf Chapter 2.4
-        SPIPhase_1 = 1, //<  http://www.atmel.com/Images/doc2585.pdf Chapter 2.4
-    };
-
-    /** SPI clocking mode which is a combination of Polarity and Phase
-        \remarks http://www.atmel.com/Images/doc2585.pdf Chapter 2.4
+    /* Determines the timing (i.e. phase) of the data bits relative to the clock pulses (CPHA)
     */
-    enum eSPIDataMode : uint8_t
+    enum class SpiClockPhase : uint8_t
     {
-        SPIDataMode_0 = SPIPolarity_0 | SPIPhase_0, //< Shift SCK: Falling, Capture SCK: Rising
-        SPIDataMode_1 = SPIPolarity_0 | SPIPhase_1, //< Shift SCK: Rising, Capture SCK: Falling
-        SPIDataMode_2 = SPIPolarity_1 | SPIPhase_0, //< Shift SCK: Rising, Capture SCK: Falling
-        SPIDataMode_3 = SPIPolarity_1 | SPIPhase_1, //< Shift SCK: Falling, Capture SCK: Rising
-
-        SPIDataMode_Mask = SPIPolarity_1 | SPIPhase_1 | SPIPolarity_0 | SPIPhase_0
+        Cpha0 = 0, ///< http://www.atmel.com/Images/doc2585.pdf Chapter 2.4
+        Cpha1 = 1, ///<  http://www.atmel.com/Images/doc2585.pdf Chapter 2.4
     };
 
+    /** Spi clocking mode which is a combination of Polarity, Phase, and in some platforms Clock-edge
+        @remarks https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Mode_numbers
+        @remarks http://www.atmel.com/Images/doc2585.pdf Chapter 2.4
+    */
+    enum class SpiMode : uint8_t
+    {
+          Mode0 ///< SpiClockPolarity::Cpol0 | SpiClockPhase::Cpha0 : Shift SCK: Falling, Capture SCK: Rising
+        , Mode1 ///< SpiClockPolarity::Cpol0 | SpiClockPhase::Cpha1 : Shift SCK: Rising, Capture SCK: Falling
+        , Mode2 ///< SpiClockPolarity::Cpol1 | SpiClockPhase::Cpha0 : Shift SCK: Rising, Capture SCK: Falling
+        , Mode3 ///< SpiClockPolarity::Cpol1 | SpiClockPhase::Cpha1 : Shift SCK: Falling, Capture SCK: Rising
+    };
+
+    /** Get the polarity of the SPI clock for the specified mode
+    */
+    constexpr SpiClockPolarity spiClockPolarity(const SpiMode mode);
+
+    /** Get the Phase of the SPI clock for the specified mode
+    */
+    constexpr SpiClockPhase spiClockPhase(const SpiMode mode);
+
+    /** Get the Mode of the SPI clock for the specified Polarity+Phase pair
+    */
+    constexpr SpiMode spiMode(const SpiClockPolarity cpol, const SpiClockPhase cpha);
+
+    /** SPI pin-selection
+    */
     template<
-        uint8_t TPin_SS, //, Device select pin (Arduino Playground = 7)
-        uint8_t TPin_MOSI, //, Config_t::Pin_MOSI/DN pin (Arduino Playground = 4)
-        uint8_t TPin_MISO, //< MISO output pin
-        uint8_t TPin_SCLK,  //< Clock pin (Arduino Playground = 3)
-        eSPIDataMode TDataMode,
-        eSPIBitOrder TBitOrder >
-    struct SPIConfig
+        typename ChipSelectPin_t //< Device select pin(s)
+        , typename MosiPin_t //, Config_t::Pin_MOSI/DN pin
+        , typename MisoPin_t //< MISO output pin
+        , typename SerialClockPin_t  //< Clock pin
+    >
+    struct SpiPins
     {
-        enum ePin : uint8_t
-        {
-            Pin_SS = TPin_SS,
-            Pin_MISO = TPin_MISO,
-            Pin_MOSI = TPin_MOSI,
-            Pin_SCLK = TPin_SCLK
-        };
+        static constexpr ChipSelectPin_t cs = {};
+        static constexpr MosiPin_t mosi = {};
+        static constexpr MisoPin_t miso = {};
+        static constexpr SerialClockPin_t sck = {};
+    };
+       
+    constexpr size_t SpiDefaultBaudRate = 12000000; //< 12MHz
 
-        enum eDataMode
-        {
-            DataMode = TDataMode,
-        };
-        enum eBitOrder
-        {
-            BitOrder = TBitOrder
-        };
+    /** Specify a Compile-time configuration for SPI
+    * @see SpiRuntimeConfig to set a flexible mode at runtime i.e. multiple slave devices
+    * @note For Soft-Device implementations this can create more optimal (smaller+faster) code than using a runtime configuration
+    */
+    template<SpiMode Mode, SpiBitOrder BitOrder, size_t BaudRate = SpiDefaultBaudRate  >
+    struct SpiConfig
+    {
+        static constexpr size_t baudRate = BaudRate;
+        static constexpr SpiMode mode = Mode;
+        static constexpr SpiBitOrder bitOrder = BitOrder;
     };
 
-    //@todo This fitted into a idea/design somehow...
-    struct Serial_SPI;
-    template <  typename Transport_t, typename Impl_t > class SerialImpl;
-    template <  typename Transport_t, typename Impl_t, typename Config_t > class SerialInterface;
-    
-    template < typename Impl_t >
-    class SerialImpl< Serial_SPI, Impl_t >
+    /** Specify a Runtime-time configuration for SPI
+    */
+    struct SpiRuntimeConfig
+    {
+        const size_t baudRate = SpiDefaultBaudRate;
+        const SpiMode mode;
+        const SpiBitOrder bitOrder;
+    };
+
+    struct SpiMessage
+    {
+        const uint8_t* txBuffer; ///<  Pointer to the output data buffer
+        uint8_t* rxBuffer; ///< Pointer to the input data buffer 
+        int16_t bufferLength; ///< Size of the message data in SPI characters
+    };
+
+    /** CRTP Platform specific base
+    * @note May specialise based on Config_t is SpiRuntimeConfig or SpiConfig etc
+    * @todo Could specialise for Async, Soft, HW device options alsos
+    */
+    template< typename Pins_t, typename Config_t, typename PlatformConfig_t >
+    class SpiImpl;
+
+    template< typename Pins_t, typename Config_t, typename PlatformConfig_t = std::nullopt_t >
+    class Spi : public IoDescriptor
     {
     public:
-        inline void initialise(uint8_t kPin_SS, uint8_t kPin_MISO, uint8_t kPin_MOSI, uint8_t kPin_SCLK);
+        using impl_t = SpiImpl<Pins_t, Config_t, PlatformConfig_t>;
+        using pins_t = Pins_t;
+        using config_t = Config_t;
+        using platformConfig_t = PlatformConfig_t; ///< Optional per-platform configuration i.e. Multiple device selection and extended configuration etc
 
-        inline void destroy( /*uint8_t kPin_SS, uint8_t kPin_MISO, uint8_t kPin_MOSI, uint8_t kPin_SCLK*/);
+        Spi();
 
-        inline void begin(uint8_t kPin_SS);
+        bool initialise(
+              const Pins_t& pins = {}
+            , const Config_t& config = {}
+            , const PlatformConfig_t& platformConfig = {} );
 
-        inline void end(uint8_t kPin_SS);
+        bool enable();
 
-        inline void write(uint8_t kPin_MOSI, uint8_t kPin_SCLK, const uint8_t value );
-        inline void write(uint8_t kPin_MOSI, uint8_t kPin_SCLK, const uint8_t* values, const size_t valuesCount);
+        bool disable();
 
-        inline uint8_t read(uint8_t kPin_MOSI, uint8_t kPin_SCLK );
-        inline void read(uint8_t kPin_MOSI, uint8_t kPin_SCLK, uint8_t* values, const size_t valuesCount);
+        int32_t read(uint8_t* const buffer, const uint16_t bufferLength, const bool doStop = true);
 
-        /** SPI Special functions
-        */
-        inline void setClockDivider(uint8_t rate); //< Valid only on hardware!?
+        int32_t write(const uint8_t* const buffer, const uint16_t bufferLength, const bool doStop = true);
 
-        inline void setDataMode(eSPIDataMode mode);
 
-        inline void setBitOrder(eSPIBitOrder bitOrder);
+        int32_t transfer(const SpiMessage& message);
+    private:
+
+        bool initialiseGpio(const Pins_t& pins, const PlatformConfig_t& platformConfig);
+
+    private:
+        Pins_t pins_ = {};
+        Config_t config_ = {};
+        impl_t impl_ = {};
     };
-
-
-    template < typename Impl_t, typename Config_t >
-    class SerialInterface<Serial_SPI, Impl_t, Config_t> : public SerialImpl<Serial_SPI, Impl_t>
-    {
-        typedef SerialImpl<Serial_SPI, Impl_t> Impl;
-
-    public:
-
-        SerialInterface() {}
-        ~SerialInterface() { destroy(); }
-
-        void initialise()
-        {
-            Impl::initialise(Config_t::Pin_SS, Config_t::Pin_MISO, Config_t::Pin_MOSI, Config_t::Pin_SCLK);
-        }
-
-        void destroy()
-        {
-            end();
-            Impl::destroy( /*Config_t::Pin_SS, Config_t::Pin_MISO, Config_t::Pin_MOSI, Config_t::Pin_SCLK*/);
-        }
-
-        void begin()
-        {
-            Impl::begin(Config_t::Pin_SS);
-        }
-
-        void end()
-        {
-            Impl::end(Config_t::Pin_SS);
-        }
-
-        void write(const uint8_t val)
-        {
-            Impl::write(Config_t::Pin_MOSI, Config_t::Pin_SCLK, val);
-        }
-
-        template<size_t Count>
-        void write(const uint8_t (&values)[Count])
-        {
-            Impl::write(Config_t::Pin_MOSI, Config_t::Pin_SCLK, values, Count);
-        }
-
-        uint8_t read()
-        {
-            return Impl::read(Config_t::Pin_MOSI, Config_t::Pin_SCLK);
-        }
-
-        template<size_t Count>
-        void read(uint8_t (&values)[Count])
-        {
-            Impl::read(Config_t::Pin_MOSI, Config_t::Pin_SCLK, values, Count);
-        }
-
-        /** SPI Special functions
-        */
-        void setClockDivider(uint8_t rate) //< Valid only on hardware!?
-        {
-            Impl::setClockDivider(rate);
-        }
-
-        void setDataMode(eSPIDataMode mode)
-        {
-            Impl::setDataMode(mode);
-        }
-
-        void setBitOrder(eSPIBitOrder bitOrder)
-        {
-            Impl::setBitOrder(bitOrder);
-        }
-    };
-
-
-    template < typename Impl_t, typename Config_t >
-    using SPI = SerialInterface<Serial_SPI, Impl_t, Config_t>;
-
 
 } //END: BareCpper
 
-#if IMPL_SPI_Software
-#include "SoftDevice/Spi_SoftDevice.hpp"
-#endif
+#include "internal/Spi-inl.hpp"
 
-#if IMPL_SPI_ArduinoSw
-#include "Arduino/Spi_ArduinoSw.hpp"
-#endif
-
-#if IMPL_SPI_Arduino
-#include "Arduino/Spi_Arduino.hpp"
-#endif
-
-#if SPI_IMPL_HARDWARE
-#if _AVR_IOM328P_H_
-#include "ATmega/Spi_ATmega328P.h"
-#else
-#  error "AVR library error, please check and update accordingly."
+#if !DOXYGEN ///< Platform specific interface definitions
+#if __SAMD51__
+#include "ATsamd/Spi_Atsamd5x.hpp"
 #endif
 #endif
 
-#endif //BARECPPER_SPI_H_
+#endif

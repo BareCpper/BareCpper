@@ -4,8 +4,8 @@
  */
 
 
-#ifndef BARECPPER_COMMON_H_
-#define BARECPPER_COMMON_H_
+#ifndef BARECPPER_COMMON_HPP_
+#define BARECPPER_COMMON_HPP_
 
 #include <cstdint>
 #include <type_traits> //< std::integral_constant
@@ -116,5 +116,11 @@ namespace BareCpper
 
 } //END: BareCpper
 
+#if !DOXYGEN ///< Platform specific interface definitions
+#if __SAMD51__
+#include "ATsamd/Common_Atsamd5x.hpp"
+#endif
+#endif
 
-#endif /* BARECPPER_REGISTERS_H_ */
+
+#endif

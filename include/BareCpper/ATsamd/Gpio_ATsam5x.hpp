@@ -1,11 +1,11 @@
 #ifndef BARECPPER_GPIO_ATSAM5X_H_
 #define BARECPPER_GPIO_ATSAM5X_H_
 
-#include "../Gpio.hpp" //< 'temp?
-
 #ifndef BARECPPER_GPIO_H_
 #  error "Include <BareCpper/Gpio.hpp> instead of this file."
 #endif
+
+#include <cassert>
 
 #include "sam.h"
 
@@ -48,9 +48,12 @@
 
 namespace BareCpper {
 
-    template<size_t PortIndex> template<size_t PinIndex>
+    template<size_t PortIndex> 
+    template<size_t PinIndex>
     struct PortPins<PortIndex>::Pin ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /**<PinIndex, Valid<(0 <= PinIndex && PinIndex <= 31)>*/
     {
+        //struct Functions;
+
         constexpr static uint8_t port = PortIndex;
         constexpr static uint8_t pin = PinIndex;
         constexpr static PortRegister_t mask = (PortRegister_t(1U) << PinIndex);
@@ -190,6 +193,92 @@ namespace BareCpper {
     SAM_G(using PB02 = PortB::Pin< 2>);
 
 
+    enum class Peripheral : uint8_t
+    {
+          Off = 0xFF
+        , A = 0x0
+        , B = 0x1
+        , C = 0x2
+        , D = 0x3
+        , E = 0x4
+        , F = 0x5
+        , G = 0x6
+        , H = 0x7
+        , I = 0x8
+        , J = 0x9
+        , K = 0xA
+        , L = 0xB
+        , M = 0xC
+        , N = 0xD
+    };
+
+#if 0
+    template<Peripheral id>
+    struct PeripheralMux;
+
+    template<>
+    struct PeripheralMux<C>
+    {
+        using Pins_t = Pins<PC04,PC05,PC06,PC07,PA08,PA09 
+    };
+#endif
+
+
+#if 0 //< TODO: doens't compile ro do what is necessary!
+    template<size_t SercomIndex>
+    struct Sercom
+    {
+        template<size_t IoSetIndex> ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /*, typename = Valid<true>*/
+        struct IoSet
+        {
+            struct PadPins;
+
+            constexpr static uint8_t sercom = SercomIndex;
+            constexpr static uint8_t ioSet = IoSetIndex;
+        };
+    };
+
+ /// @{ "6.2.8.1 SERCOM IOSET Configurations"
+    SAM_G((template<>template<>template<> struct Sercom<0>::IoSet<0>::PadPins : Pins<PA08, PA09, PA10, PA11> {}));
+    SAM_N((template<>template<>template<> struct Sercom<0>::IoSet<1>::PadPins : Pins<PB24, PB25, PC24, PC25> {}));
+    SAM_G((template<>template<>template<> struct Sercom<0>::IoSet<2>::PadPins : Pins<PA04, PA05, PA06, PA07> {}));
+    SAM_N((template<>template<>template<> struct Sercom<0>::IoSet<3>::PadPins : Pins<PC17, PC16, PC18, PC19> {}));
+    
+    SAM_G((template<>template<>template<> struct Sercom<1>::IoSet<0>::PadPins : Pins<PA16, PA17, PA18, PA19> {}));
+    SAM_P((template<>template<>template<> struct Sercom<1>::IoSet<1>::PadPins : Pins<PC22, PC23, PD20, PD21> {}));
+    SAM_N((template<>template<>template<> struct Sercom<1>::IoSet<2>::PadPins : Pins<PC27, PC28, PB22, PB23> {}));
+    SAM_G((template<>template<>template<> struct Sercom<1>::IoSet<3>::PadPins : Pins<PA00, PA01, PA30, PA31> {}));
+    
+    SAM_G((template<>template<>template<> struct Sercom<2>::IoSet<0>::PadPins : Pins<PA12, PA13, PA14, PA15> {}));
+    SAM_P((template<>template<>template<> struct Sercom<2>::IoSet<1>::PadPins : Pins<PB26, PB27, PB28, PB29> {}));
+    SAM_G((template<>template<>template<> struct Sercom<2>::IoSet<2>::PadPins : Pins<PA09, PA08, PA10, PA11> {}));
+    SAM_N((template<>template<>template<> struct Sercom<2>::IoSet<3>::PadPins : Pins<PB25, PB24, PC24, PC25> {}));
+    
+    SAM_G((template<>template<>template<> struct Sercom<3>::IoSet<0>::PadPins : Pins<PA22, PA23, PA24, PA25> {}));
+    SAM_N((template<>template<>template<> struct Sercom<3>::IoSet<1>::PadPins : Pins<PB20, PB21, PA20, PA21> {}));
+    SAM_G((template<>template<>template<> struct Sercom<3>::IoSet<2>::PadPins : Pins<PA17, PA16, PA18, PA19> {}));
+    SAM_P((template<>template<>template<> struct Sercom<3>::IoSet<3>::PadPins : Pins<PC23, PC22, PD20, PD21> {}));
+    
+    SAM_J((template<>template<>template<> struct Sercom<4>::IoSet<0>::PadPins : Pins<PB12, PB13, PB14, PB15> {}));
+    SAM_G((template<>template<>template<> struct Sercom<4>::IoSet<1>::PadPins : Pins<PB08, PB09, PB10, PB11> {}));
+    SAM_G((template<>template<>template<> struct Sercom<4>::IoSet<2>::PadPins : Pins<PA13, PA12, PA14, PA15> {}));
+    SAM_P((template<>template<>template<> struct Sercom<4>::IoSet<3>::PadPins : Pins<PB27, PB26, PB28, PB29> {}));
+    
+    SAM_N((template<>template<>template<> struct Sercom<5>::IoSet<0>::PadPins : Pins<PB16, PB17, PB18, PB19> {}));
+    SAM_G((template<>template<>template<> struct Sercom<5>::IoSet<1>::PadPins : Pins<PA23, PA22, PA20, PA21> {}));
+    SAM_G((template<>template<>template<> struct Sercom<5>::IoSet<2>::PadPins : Pins<PA23, PA22, PA24, PA25> {}));
+    SAM_G((template<>template<>template<> struct Sercom<5>::IoSet<3>::PadPins : Pins<PA23, PA22, PB22, PB23> {}));
+    SAM_J((template<>template<>template<> struct Sercom<5>::IoSet<4>::PadPins : Pins<PB31, PB30, PB00, PB01> {}));
+    SAM_J((template<>template<>template<> struct Sercom<5>::IoSet<5>::PadPins : Pins<PB02, PB03, PB00, PB01> {}));
+    
+    SAM_N((template<>template<>template<> struct Sercom<6>::IoSet<0>::PadPins : Pins<PC16, PC17, PC18, PC19> {}));
+    SAM_P((template<>template<>template<> struct Sercom<6>::IoSet<1>::PadPins : Pins<PC04, PC05, PC06, PC07> {}));
+    SAM_P((template<>template<>template<> struct Sercom<6>::IoSet<2>::PadPins : Pins<PD09, PD08, PD10, PD11> {}));
+    SAM_N((template<>template<>template<> struct Sercom<6>::IoSet<3>::PadPins : Pins<PC13, PC12, PC14, PC15> {}));
+    SAM_N((template<>template<>template<> struct Sercom<6>::IoSet<5>::PadPins : Pins<PC13, PC12, PC10, PC11> {}));
+/// @} "6.2.8.1 SERCOM IOSET Configurations"
+#endif
+
 #if 0
     /** @{ Analog pins  */
     using PinA0 = Pin2;
@@ -304,6 +393,43 @@ namespace BareCpper {
     {
         gpioPullDisable( pin );
     }
+
+    template<typename Pin_t>
+    constexpr Peripheral spiPinPeripheral(const Pin_t& pin, const uint8_t sercomIndex)
+    {
+        assert(sercomIndex == 1); //< 'todo A proper impl!
+
+        return std::is_same_v<Pin_t, PB22> ? Peripheral::C :
+               std::is_same_v<Pin_t, PB23> ? Peripheral::C :
+               std::is_same_v<Pin_t, PA17> ? Peripheral::C :
+                                             Peripheral::Off;
+    }
+
+    template<typename Pin_t, typename PlatformOption_t>
+    void gpioFunction(const Pin_t& pin, Function::Spi_t, const PlatformOption_t& platformOptions = {})
+    {
+        constexpr Peripheral peripheral = spiPinPeripheral(pin, platformOptions.sercomIndex);
+        static_assert(peripheral != Peripheral::Off);
+
+        using ::Port; //< Disambiguate Sam.h vs BareCpper::Gpio
+
+        PORT->Group[pin.port].PINCFG[pin.pin].bit.PMUXEN = (peripheral != Peripheral::Off); //< 0xF is maximum valid function
+
+        if (pin.pin & 0x1) // Odd numbered pin 
+        {
+            PORT->Group[pin.port].PMUX[pin.pin / 2].bit.PMUXO = static_cast<uint8_t>(peripheral);
+        }
+        else // Even numbered pin
+        {
+            PORT->Group[pin.port].PMUX[pin.pin / 2].bit.PMUXE = static_cast<uint8_t>(peripheral);
+        }
+    }
+
+
+    //using Imu_Miso = BareCpper::PB22; //< PIN_SPI_MISO         (23u)
+   // using Imu_Mosi = BareCpper::PB23; //< PIN_SPI_MOSI         (24u)
+    //using Imu_Sck = BareCpper::PA17; //< PIN_SPI_SCK          (25u)
+    //using Imu_ChipSelect = BareCpper::PA22; //< IMU_CS    12
 
 } //END: BareCopper
 

@@ -104,7 +104,7 @@ namespace BareCpper
         /**
          * \brief The I2C master callback function type for completion of RX or TX
          */
-        typedef void (*FnComplete_t)( TwiAsync& twi);
+        typedef void (*FnComplete_t)(TwiAsync& twi);
 
         /**
          * \brief The I2C master callback function type for error
@@ -153,13 +153,13 @@ namespace BareCpper
         // iPinScl == PA13
         // iPinSda == PA12
         TwiAsync( const uint8_t iPort, const uint8_t iPinScl, const uint8_t iPinSda )
-            : BareCpper::IoDescriptor{
-              []( BareCpper::IoDescriptor& descriptor, uint8_t* const buffer, const uint16_t bufferLength ) ->int32_t
+            : IoDescriptor{
+              []( IoDescriptor& descriptor, uint8_t* const buffer, const uint16_t bufferLength ) ->int32_t
                 {
                     TwiAsync& twi = reinterpret_cast<TwiAsync&>(descriptor);                    
                     return twi.readAsync( buffer, bufferLength );
                 }
-            , []( BareCpper::IoDescriptor& descriptor, const uint8_t* const buffer, const uint16_t bufferLength ) ->int32_t
+            , []( IoDescriptor& descriptor, const uint8_t* const buffer, const uint16_t bufferLength ) ->int32_t
                 {
                     TwiAsync& twi = reinterpret_cast<TwiAsync&>(descriptor);
                     return twi.writeAsync( buffer, bufferLength );
@@ -383,25 +383,6 @@ namespace BareCpper
             return true;
         }
 
-        /* @param[in] function  The pin function is given by a 32 - bit wide bitfield found in the header files for the device
-                                e.g. PINMUX_PA12C_SERCOM2_PAD0
-        */
-        static void setPinFunction( const uint8_t iPort, const uint8_t iPin, const uint32_t function )
-        {
-            using ::Port; //< Disambiguate Sam.h vs BareCpper::Gpio
-
-            PORT->Group[iPort].PINCFG[iPin].bit.PMUXEN = (function <= PORT_PMUX_PMUXE_Msk); //< 0xF is maximum valid function
-
-            if( iPin & 0x1 ) // Odd numbered pin 
-            {                
-                PORT->Group[iPort].PMUX[iPin/2].bit.PMUXO = function;
-            }
-            else // Even numbered pin
-            {                
-                PORT->Group[iPort].PMUX[iPin/2].bit.PMUXE = function;
-            }
-        }
-
         bool initialiseGpio()
         {
             //PORT_CRITICAL_SECTION_ENTER();
@@ -410,8 +391,8 @@ namespace BareCpper
             PORT->Group[iPort_].PINCFG[iPinScl_].bit.PULLEN = false;//< SCL, GPIO_PULL_OFF
             //PORT_CRITICAL_SECTION_LEAVE();
 
-            setPinFunction( iPort_, iPinSda_, MUX_PA12C_SERCOM2_PAD0 );
-            setPinFunction( iPort_, iPinScl_, MUX_PA13C_SERCOM2_PAD1 );
+            ATsamd5x::setPinFunction( iPort_, iPinSda_, MUX_PA12C_SERCOM2_PAD0 );
+            ATsamd5x::setPinFunction( iPort_, iPinScl_, MUX_PA13C_SERCOM2_PAD1 );
 
             return true;
         }

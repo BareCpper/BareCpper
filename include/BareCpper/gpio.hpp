@@ -10,6 +10,7 @@
 #define BARECPPER_GPIO_H_
 
 #include <cstdint>
+#include <optional> //< std::nullopt
 #include "Common.hpp"
 #include "Sub0Std.hpp"
 
@@ -130,7 +131,6 @@ namespace BareCpper
     using PinsSequence = PinsSequenceN< 0, PinsT... >;
 
     /** Brings a collection of Pins into a set
-    * @warning All pins must reside on the same port
     */
     template< typename ...PinsT >
     struct Pins
@@ -266,7 +266,18 @@ namespace BareCpper
                     : gpioPullOff( pin );
     }
     template<typename Pin_t> sub0::if_void<Pin_t> gpioPullSet() {}
-	
+
+    namespace Function
+    {
+        constexpr struct Spi_t {} Spi; ///< Spi device
+    };
+
+    template<typename Pin_t, typename FunctionTag_t, typename PlatformOption_t = std::nullopt_t>
+    void gpioFunction(const Pin_t& pin = Pin_t(), FunctionTag_t = {}, const PlatformOption_t& platformOptions = {});
+
+    template<typename Pin_t, typename FunctionTag>   
+    sub0::if_void<Pin_t> gpioFunction(FunctionTag = {}) {}
+
 } //END: BareCpper
 
 
