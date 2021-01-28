@@ -74,7 +74,7 @@ void I2C_0_example( void )
 #endif
 
 #ifndef SERCOM_I2CM_CTRLA_MODE_I2C_MASTER
-#define SERCOM_I2CM_CTRLA_MODE_I2C_MASTER (5 << 2) //< @todo Is the CTRLA I2C MASTER  defined somewhere?
+#define SERCOM_I2CM_CTRLA_MODE_I2C_MASTER SERCOM_I2CM_CTRLA_MODE(0x5) //< @todo Is the CTRLA I2C MASTER  defined somewhere?
 #endif
 
 

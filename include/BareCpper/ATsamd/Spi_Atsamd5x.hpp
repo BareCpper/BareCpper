@@ -26,11 +26,11 @@
 #define CONF_SPISSDE 0 ///< Slave Select Low Detect Enable
 #define CONF_SPIMSSEN 0x0 ///< Master Slave Select Enable
 #define CONF_SPIPLOADEN 0 ///< Data Preload Enable
-#define CONF_SPIRXPO 0 ///< Data In Pinout
-#define CONF_SPITXPO 2 ///< Data Out Pinout
+#define CONF_SPIRXPO 2 ///< Data In Pinout
+#define CONF_SPITXPO 3 ///< Data Out Pinout
 
 #ifndef SERCOM_SPI_CTRLA_MODE_SPI_MASTER
-#define SERCOM_SPI_CTRLA_MODE_SPI_MASTER 0x03 //< @todo Is the CTRLA SPI MASTER  defined somewhere?
+#define SERCOM_SPI_CTRLA_MODE_SPI_MASTER SERCOM_SPI_CTRLA_MODE(0x03) //< @todo Is the CTRLA SPI MASTER  defined somewhere?
 #endif
 namespace BareCpper
 {
@@ -105,39 +105,27 @@ namespace BareCpper
             size_t iTxBuffer = 0;
 
             int32_t retVal = 0;
-            for (;;) {
-                const uint32_t iflag = hw_->INTFLAG.reg;
 
-                if (iflag & SERCOM_SPI_INTFLAG_RXC)
+            while ( !hw_->INTFLAG.bit.ERROR && (iRxBuffer < message.bufferLength))
+            {
+                //  Data Register Empty
+                /// @note ASF _spi_m_sync_trans: In master mode, do not start next byte before previous byte received as to make better output waveform
+                if ( hw_->INTFLAG.bit.DRE && (iRxBuffer >= iTxBuffer))
                 {
-                    uint8_t readByte = static_cast<uint8_t>(hw_->DATA.bit.DATA); // Reading data
+                    const uint8_t writeByte = txBuffer ? txBuffer[iTxBuffer] : uint8_t(CONF_SPIDUMMYBYTE);
+                    //SERCOM_CRITICAL_SECTION_ENTER
+                    hw_->DATA.bit.DATA = writeByte; //< @note Clears hw_->INTFLAG.bit.DRE
+                    //SERCOM_CRITICAL_SECTION_LEAVE
+                    ++iTxBuffer;
+                }
 
+                // Receive Complete Interrupt
+                if (hw_->INTFLAG.bit.RXC )
+                {
+                    const uint8_t readByte = static_cast<uint8_t>(hw_->DATA.bit.DATA); // @note Clears hw_->INTFLAG.bit.RXC
                     if (rxBuffer)
                         rxBuffer[iRxBuffer] = readByte;
                     ++iRxBuffer;
-
-                    /* @see ASF _spi_m_sync_trans:  @todo Doens't make actual sense as is always enforced by logic anyhow!?!?
-                     * In master mode, do not start next byte before previous byte received
-                     * to make better output waveform */
-                    if (iRxBuffer >= iTxBuffer) 
-                    {
-                        const uint8_t writeByte = txBuffer ? txBuffer[iTxBuffer++] : uint8_t(CONF_SPIDUMMYBYTE);
-                        hw_->DATA.bit.DATA = writeByte;
-                    }
-                }
-
-                if (iflag && SERCOM_SPI_INTFLAG_ERROR)
-                {
-                    //SERCOM_CRITICAL_SECTION_ENTER ???
-                    hw_->STATUS.reg = ~0;
-                    hw_->INTFLAG.reg = SERCOM_SPI_INTFLAG_ERROR;
-                    retVal = -1;
-                    break;
-                }
-
-                if (iTxBuffer >= message.bufferLength && iRxBuffer >= message.bufferLength) {
-                    retVal = iTxBuffer;
-                    break;
                 }
             }
 
@@ -145,7 +133,17 @@ namespace BareCpper
             while(!(hw_->INTFLAG.reg & (SERCOM_SPI_INTFLAG_TXC | SERCOM_SPI_INTFLAG_DRE)));
             hw_->INTFLAG.reg = (SERCOM_SPI_INTFLAG_TXC | SERCOM_SPI_INTFLAG_DRE); //< Clear flag
 
-            return retVal;
+            if (hw_->INTFLAG.bit.ERROR)
+            {
+                //SERCOM_CRITICAL_SECTION_ENTER ???
+                hw_->STATUS.reg = ~0;
+                hw_->INTFLAG.reg = SERCOM_SPI_INTFLAG_ERROR;
+                return -1;
+            }
+            else
+            {
+                return iTxBuffer;
+            }
         }
 
 
@@ -216,25 +214,29 @@ namespace BareCpper
 
             while (hw_->SYNCBUSY.bit.SWRST); // Wait for reset
 
-            using BaudBit = decltype(hw_->BAUD.reg);
-            const BaudBit baudBit = static_cast<BaudBit>((static_cast<float>(platformConfig.gclkId_CORE_Freq) / static_cast<float>(2 * config.baudRate)) - 1);
+            using BaudBit_t = decltype(hw_->BAUD.reg);
+            const BaudBit_t baudBit = static_cast<BaudBit_t>((static_cast<float>(platformConfig.gclkId_CORE_Freq) / static_cast<float>(2 * config.baudRate)) - 1);
                             
             //SERCOM_CRITICAL_SECTION_ENTER();
-            hw_->CTRLA.reg = SERCOM_SPI_CTRLA_MODE_SPI_MASTER
-                | (config.bitOrder==SpiBitOrder::LSBFirst ? SERCOM_SPI_CTRLA_DORD : 0)  ///@todo Support selecting slave modes?
-                | (spiClockPolarity(config.mode)==SpiClockPolarity::Cpol1 ? SERCOM_SPI_CTRLA_CPOL : 0)
+            const uint32_t ctrlA = SERCOM_SPI_CTRLA_MODE_SPI_MASTER
+                | (config.bitOrder == SpiBitOrder::LSBFirst ? SERCOM_SPI_CTRLA_DORD : 0)  ///@todo Support selecting slave modes?
+                | (spiClockPolarity(config.mode) == SpiClockPolarity::Cpol1 ? SERCOM_SPI_CTRLA_CPOL : 0)
                 | (spiClockPhase(config.mode) == SpiClockPhase::Cpha1 ? SERCOM_SPI_CTRLA_CPHA : 0)
                 /// @todo Slave SPI only:  | (CONF_SPIAMODE_EN ? SERCOM_SPI_CTRLA_FORM(2) : SERCOM_SPI_CTRLA_FORM(0))
                 | SERCOM_SPI_CTRLA_DOPO(CONF_SPITXPO)
                 | SERCOM_SPI_CTRLA_DIPO(CONF_SPIRXPO)
                 | (CONF_SPIIBON ? SERCOM_SPI_CTRLA_IBON : 0)
                 | (CONF_SPIRUNSTDBY ? SERCOM_SPI_CTRLA_RUNSTDBY : 0);
-            hw_->CTRLB.reg = ((CONF_SPIRXEN ? SERCOM_SPI_CTRLB_RXEN : 0)
+            const uint32_t ctrlB = ((CONF_SPIRXEN ? SERCOM_SPI_CTRLB_RXEN : 0)
                 | (CONF_SPIMSSEN ? SERCOM_SPI_CTRLB_MSSEN : 0)
-                | (CONF_SPISSDE ? SERCOM_SPI_CTRLB_SSDE  : 0)
+                | (CONF_SPISSDE ? SERCOM_SPI_CTRLB_SSDE : 0)
                 | (CONF_SPIPLOADEN ? SERCOM_SPI_CTRLB_PLOADEN : 0)
                 /// @todo Slave SPI only: | SERCOM_SPI_CTRLB_AMODE(CONF_SPIAMODE) 
-                | SERCOM_SPI_CTRLB_CHSIZE(CONF_SPICHSIZE));                
+                | SERCOM_SPI_CTRLB_CHSIZE(CONF_SPICHSIZE));
+
+            hw_->CTRLA.reg = ctrlA;
+            hw_->CTRLB.reg = ctrlB;
+
             /// @todo Slave SPI only:  |addr = (SERCOM_SPI_ADDR_ADDR(CONF_SPIADDR) | SERCOM_SPI_ADDR_ADDRMASK(CONF_SPIADDRMASK));
             hw_->DBGCTRL.bit.DBGSTOP = true;
             hw_->BAUD.bit.BAUD = baudBit;

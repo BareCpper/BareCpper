@@ -77,7 +77,10 @@ namespace BareCpper
 
     template< typename Pins_t, typename Config_t, typename PlatformConfig_t>
     bool Spi<Pins_t, Config_t, PlatformConfig_t>::initialiseGpio(const Pins_t& pins, const PlatformConfig_t& platformConfig)
-    {        
+    {
+        gpioDirectionOut(pins.cs);// Set pin direction to out
+        gpioOutHigh(pins.cs);
+
         gpioDirectionIn(pins.miso);// Set pin direction to input
         gpioPullDisable(pins.miso);
         gpioFunction(pins.miso, Function::Spi, platformConfig);
@@ -143,7 +146,7 @@ namespace BareCpper
 
         const int32_t retVal = transfer(message);
 
-        if (doStop || (retVal == 0))
+        if (doStop || (retVal <= 0))
         {
             BareCpper::gpioOutHigh(pins_.cs); //< Stop comms
         }

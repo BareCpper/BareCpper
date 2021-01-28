@@ -17,7 +17,7 @@ namespace BareCpper {
         /* @param[in] function  The pin function is given by a 32 - bit wide bitfield found in the header files for the device
                                 e.g. PINMUX_PA12C_SERCOM2_PAD0
         */
-        static void setPinFunction(const uint8_t iPort, const uint8_t iPin, const uint32_t function)
+        inline void setPinFunction(const uint8_t iPort, const uint8_t iPin, const uint32_t function)
         {
             using ::Port; //< Disambiguate Sam.h vs BareCpper::Gpio
 
@@ -33,13 +33,14 @@ namespace BareCpper {
             }
         }
 
-        constexpr ::Sercom* sercom(const uint8_t sercomIndex)
+        inline ::Sercom* sercom(const uint8_t sercomIndex)
         {
             using ::Sercom;
             std::array devices = SERCOM_INSTS;
             return devices[sercomIndex];
         }
-        constexpr void sercomApbEnable(const uint8_t sercomIndex)
+        
+        inline void sercomApbEnable(const uint8_t sercomIndex)
         {
             switch (sercomIndex)
             {
@@ -57,6 +58,7 @@ namespace BareCpper {
             uint8_t gclkId_CORE; ///< SERCOMn_GCLK_ID_CORE
             uint8_t gclkId_SLOW; ///< SERCOM2_GCLK_ID_SLOW
         };
+
         constexpr SercomParameters sercomParameters(const uint8_t sercomIndex)
         {
             constexpr std::array gclkId_COREs = { SERCOM0_GCLK_ID_CORE, SERCOM1_GCLK_ID_CORE, SERCOM2_GCLK_ID_CORE, SERCOM3_GCLK_ID_CORE, SERCOM4_GCLK_ID_CORE, SERCOM5_GCLK_ID_CORE };
