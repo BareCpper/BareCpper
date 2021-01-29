@@ -9,10 +9,7 @@
 #include <cstdint> 
 #include <array> //< std::array
 
-#include "../Common.hpp" //< 'temp?
-
-#include "sam.h"
-#include "sercom.h" //< @note From Samd51 CMSIS
+#include "Sercom_ATsamd5x.hpp"
 
 #define CONF_SPIRXEN 0x1
 #define CONF_SPICHSIZE 0x0
