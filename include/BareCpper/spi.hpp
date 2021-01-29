@@ -70,7 +70,7 @@ namespace BareCpper
         static constexpr SerialClockPin_t sck = {};
     };
        
-    constexpr size_t SpiDefaultBaudRate = 12000000; //< 12MHz
+    constexpr size_t SpiDefaultBaudRate = 6000000; //< 6MHz
 
     /** Specify a Compile-time configuration for SPI
     * @see SpiRuntimeConfig to set a flexible mode at runtime i.e. multiple slave devices

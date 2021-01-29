@@ -106,11 +106,12 @@ namespace BareCpper
 
             int32_t retVal = 0;
 
-            while ( !hw_->INTFLAG.bit.ERROR && (iRxBuffer < message.bufferLength))
+            SERCOM_SPI_INTFLAG_Type iFlag; //, Store volatile per iteration to save re-reading for each flag
+            for (iFlag.reg = hw_->INTFLAG.reg; !iFlag.bit.ERROR && (iRxBuffer < message.bufferLength); iFlag.reg = hw_->INTFLAG.reg )
             {
                 //  Data Register Empty
                 /// @note ASF _spi_m_sync_trans: In master mode, do not start next byte before previous byte received as to make better output waveform
-                if ( hw_->INTFLAG.bit.DRE && (iRxBuffer >= iTxBuffer))
+                if (iFlag.bit.DRE && (iRxBuffer >= iTxBuffer))
                 {
                     const uint8_t writeByte = txBuffer ? txBuffer[iTxBuffer] : uint8_t(CONF_SPIDUMMYBYTE);
                     //SERCOM_CRITICAL_SECTION_ENTER
@@ -120,7 +121,7 @@ namespace BareCpper
                 }
 
                 // Receive Complete Interrupt
-                if (hw_->INTFLAG.bit.RXC )
+                if (iFlag.bit.RXC )
                 {
                     const uint8_t readByte = static_cast<uint8_t>(hw_->DATA.bit.DATA); // @note Clears hw_->INTFLAG.bit.RXC
                     if (rxBuffer)
@@ -133,7 +134,7 @@ namespace BareCpper
             while(!(hw_->INTFLAG.reg & (SERCOM_SPI_INTFLAG_TXC | SERCOM_SPI_INTFLAG_DRE)));
             hw_->INTFLAG.reg = (SERCOM_SPI_INTFLAG_TXC | SERCOM_SPI_INTFLAG_DRE); //< Clear flag
 
-            if (hw_->INTFLAG.bit.ERROR)
+            if (iFlag.bit.ERROR)
             {
                 //SERCOM_CRITICAL_SECTION_ENTER ???
                 hw_->STATUS.reg = ~0;
