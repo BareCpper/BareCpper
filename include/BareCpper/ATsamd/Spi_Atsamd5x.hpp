@@ -109,17 +109,6 @@ namespace BareCpper
             SERCOM_SPI_INTFLAG_Type iFlag; //, Store volatile per iteration to save re-reading for each flag
             for (iFlag.reg = hw_->INTFLAG.reg; !iFlag.bit.ERROR && (iRxBuffer < message.bufferLength); iFlag.reg = hw_->INTFLAG.reg )
             {
-                //  Data Register Empty
-                /// @note ASF _spi_m_sync_trans: In master mode, do not start next byte before previous byte received as to make better output waveform
-                if (iFlag.bit.DRE && (iRxBuffer >= iTxBuffer))
-                {
-                    const uint8_t writeByte = txBuffer ? txBuffer[iTxBuffer] : uint8_t(CONF_SPIDUMMYBYTE);
-                    //SERCOM_CRITICAL_SECTION_ENTER
-                    hw_->DATA.bit.DATA = writeByte; //< @note Clears hw_->INTFLAG.bit.DRE
-                    //SERCOM_CRITICAL_SECTION_LEAVE
-                    ++iTxBuffer;
-                }
-
                 // Receive Complete Interrupt
                 if (iFlag.bit.RXC )
                 {
@@ -128,6 +117,22 @@ namespace BareCpper
                         rxBuffer[iRxBuffer] = readByte;
                     ++iRxBuffer;
                 }
+
+                //  Data Register Empty
+                if (iFlag.bit.DRE 
+                    && (iTxBuffer < message.bufferLength)
+#if 0 /// @todo TBC: ASF _spi_m_sync_trans: In master mode, do not start next byte before previous byte received as to make better output waveform
+                    && (iRxBuffer >= iTxBuffer)
+#endif
+                    )
+                {
+                    const uint8_t writeByte = txBuffer ? txBuffer[iTxBuffer] : uint8_t(CONF_SPIDUMMYBYTE);
+                    //SERCOM_CRITICAL_SECTION_ENTER
+                    hw_->DATA.bit.DATA = writeByte; //< @note Clears hw_->INTFLAG.bit.DRE
+                    //SERCOM_CRITICAL_SECTION_LEAVE
+                    ++iTxBuffer;
+                }
+
             }
 
             /* Wait until SPI bus idle */
