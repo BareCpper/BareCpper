@@ -61,17 +61,17 @@ namespace BareCpper {
          */
         static inline Count count() noexcept
         { 
-            return MonotonicCounter::count() + countOffset_; 
+            return MonotonicCounter::count();//TODO + countOffset_; 
         }
 
         static inline EpochCount epochOffset() noexcept
         { 
-            return epochOffset_;
+            return 0;//TODO epochOffset_;
         }
 
     private:
-        static int32_t countOffset_;
-        static EpochCount epochOffset_;
+       //TODO: static int32_t countOffset_;
+       //TODO: static EpochCount epochOffset_;
     };
 
 } //END: BareCpper
