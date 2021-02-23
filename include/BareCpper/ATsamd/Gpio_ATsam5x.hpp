@@ -11,8 +11,8 @@
 
 namespace BareCpper {
 
-    template<size_t PortIndex> 
-    template<size_t PinIndex>
+    template<std::size_t PortIndex> 
+    template<std::size_t PinIndex>
     struct PortPins<PortIndex>::Pin ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /**<PinIndex, Valid<(0 <= PinIndex && PinIndex <= 31)>*/
     {
         //struct Functions;
@@ -209,13 +209,13 @@ namespace BareCpper {
     template<> template<>
     struct PortPins<0>::Pin< >
     {
-        static const size_t foo = 222;
+        static const std::size_t foo = 222;
     };
 
     template<> template<>
     struct PortPins<0>::Pin<2>
     {
-        static const size_t foo = 333;
+        static const std::size_t foo = 333;
     };
 #endif
 

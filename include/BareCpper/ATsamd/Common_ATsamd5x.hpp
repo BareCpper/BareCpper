@@ -7,6 +7,13 @@
 
 #include "sam.h"
 
+// @{ Map new v2.x names to Samd51 v1.x @note Old names may conflict/overlap with user code 
+#if HEADER_FORMAT_VERSION_MAJOR>1
+#define PORT_REGS using ::Port; PORT  //< Disambiguate Sam.h Port vs BareCpper::Gpio::Port
+#define GROUP Group ///< Port->Group in v1 headers bs ->GROUP in v2
+#error "TODO: Support newer Atmel DFP!"
+#endif
+
 #if   defined(__SAMD51G18A__) || defined(__ATSAMD51G18A__) || defined(__SAMD51G19A__) || defined(__ATSAMD51G19A__)
 #   define SAM_IC_PINCOUNT 48 ///< VQFN 48 
 #elif defined(__SAMD51J18A__) || defined(__ATSAMD51J18A__) || defined(__SAMD51J19A__) || defined(__ATSAMD51J19A__) || defined(__SAMD51J20A__) || defined(__ATSAMD51J20A__)

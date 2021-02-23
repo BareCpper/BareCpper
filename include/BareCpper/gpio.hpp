@@ -28,7 +28,7 @@
 namespace BareCpper
 {		
 
-    template< size_t PinIndex, typename PinT > struct PinN;
+    template< std::size_t PinIndex, typename PinT > struct PinN;
     template< typename PinT > struct PinN<0u, PinT> { typedef PinT Pin0; };
     template< typename PinT > struct PinN<1u, PinT> { typedef PinT Pin1; };
     template< typename PinT > struct PinN<2u, PinT> { typedef PinT Pin2; };
@@ -70,25 +70,24 @@ namespace BareCpper
     template< typename PinT > struct PinN<38u, PinT> { typedef PinT Pin38; };
     template< typename PinT > struct PinN<39u, PinT> { typedef PinT Pin39; };
 
-
    // template<bool> struct Valid; ///< SFINAE
 
-    template< size_t PortIndex >
+    template< std::size_t PortIndex >
     struct PortPins
     {
-        template<size_t PinIndex> ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /*, typename = Valid<true>*/
+        template<std::size_t PinIndex> ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /*, typename = Valid<true>*/
         struct Pin;
     };
 
     /** Helper types to typedef Pin<N> to a different index of PinY
      * @tparam[in] AliasIndex  Index to map pin to i.e. Pin0 where the '0' is the cIndex
     */
-    template< size_t AliasIndex, size_t PortIndex, size_t PinIndex >
+    template< std::size_t AliasIndex, std::size_t PortIndex, std::size_t PinIndex >
     using PinIndexAlias = PinN< AliasIndex, typename PortPins<PortIndex>::template Pin<PinIndex> >;
 
     /** Helper types to typedef Pin<N> to member PinN at the same index the pin exists on a port
     */
-    template< size_t PortIndex, size_t PinIndex >
+    template< std::size_t PortIndex, std::size_t PinIndex >
     using PortPinAlias = PinN< PinIndex, typename PortPins<PortIndex>::template Pin<PinIndex> >;
 
 
@@ -103,7 +102,7 @@ namespace BareCpper
         {
         };
     */
-    template< size_t PortIndex, size_t ...PinIndices >
+    template< std::size_t PortIndex, std::size_t ...PinIndices >
     struct AllPortPins
         : PortPins<PortIndex>
         , PortPinAlias< PortIndex, PinIndices >...
@@ -111,17 +110,17 @@ namespace BareCpper
     };
 
 
-    template< size_t FirstIndex, typename ...PinsT >
+    template< std::size_t FirstIndex, typename ...PinsT >
     struct PinsSequenceN;
 
-    template< size_t FirstIndex, typename FirstPinT, typename ...PinsT >
+    template< std::size_t FirstIndex, typename FirstPinT, typename ...PinsT >
     struct PinsSequenceN< FirstIndex, FirstPinT, PinsT...>
         : PinN< FirstIndex, FirstPinT >
         , PinsSequenceN< FirstIndex + 1U, PinsT... >
     {
     };
 
-    template< size_t FirstIndex, typename FirstPinT>
+    template< std::size_t FirstIndex, typename FirstPinT>
     struct PinsSequenceN< FirstIndex, FirstPinT >
         : PinN< FirstIndex, FirstPinT >
     {
@@ -145,7 +144,7 @@ namespace BareCpper
         }
     };
 
-    template< size_t PortIndex>
+    template< std::size_t PortIndex>
     struct Port;
 
     /** Pin assignement for output
@@ -289,6 +288,8 @@ namespace BareCpper
 #       include "nRF52/Gpio_nRF52832.hpp"
 #   elif __SAMD51__
 #       include "ATsamd/Gpio_ATsam5x.hpp"
+#else
+#    error "Platform not defined or not supported"
 #   endif
 
 #endif
