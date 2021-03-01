@@ -63,6 +63,7 @@ namespace ATsamd5x {
         //}
     };
 
+#if 0 // @NOTE WIP
     auto padPins(Sercom<0>)
     {
         std::tuple<
@@ -118,6 +119,7 @@ namespace ATsamd5x {
     template<>template<>template<> struct Sercom<6>::IoSet<5>::PadPins : Pins<SAM_N(PC13), SAM_N(PC12), SAM_N(PC10), SAM_N(PC11)> {}; //SAM_N
     /// @} "6.2.8.1 SERCOM IOSET Configurations"
 
+#endif
 
 } //END: ATsamd5x
 } //END: BareCopper
