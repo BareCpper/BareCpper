@@ -304,12 +304,29 @@ namespace BareCpper {
     template<typename Pin_t>
     constexpr Peripheral spiPinPeripheral(const Pin_t& pin, const uint8_t sercomIndex)
     {
-        assert(sercomIndex == 1); //< 'todo A proper impl!
+        assert(sercomIndex == 1 || sercomIndex == 0 || sercomIndex == 4 ); //< 'todo A proper impl!
 
-        return std::is_same_v<Pin_t, PB22> ? Peripheral::C :
-               std::is_same_v<Pin_t, PB23> ? Peripheral::C :
-               std::is_same_v<Pin_t, PA17> ? Peripheral::C :
-                                             Peripheral::Off;
+        switch (sercomIndex)
+        {
+        case 0:
+            return std::is_same_v<Pin_t, PA06> ? Peripheral::D :
+                   std::is_same_v<Pin_t, PA04> ? Peripheral::C :
+                   std::is_same_v<Pin_t, PA05> ? Peripheral::C :
+                                                 Peripheral::Off;
+        case 1:
+            return std::is_same_v<Pin_t, PB22> ? Peripheral::C :
+                   std::is_same_v<Pin_t, PB23> ? Peripheral::C :
+                   std::is_same_v<Pin_t, PA17> ? Peripheral::C :
+                                                 Peripheral::Off;
+        case 4:
+            return std::is_same_v<Pin_t, PB08> ? Peripheral::D :
+                   std::is_same_v<Pin_t, PB11> ? Peripheral::D :
+                   std::is_same_v<Pin_t, PB09> ? Peripheral::D :
+                   Peripheral::Off;
+        default: 
+            return Peripheral::Off;
+        }
+
     }
 
     template<typename Pin_t, typename PlatformOption_t>

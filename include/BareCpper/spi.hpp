@@ -2,6 +2,7 @@
 #define BARECPPER_SPI_HPP_
 
 #include "Io.hpp"
+#include "Gpio.hpp"
 
 namespace BareCpper
 {
@@ -56,29 +57,32 @@ namespace BareCpper
 
     /** SPI pin-selection
     */
-    template<
-        typename ChipSelectPin_t //< Device select pin(s)
-        , typename MosiPin_t //, Config_t::Pin_MOSI/DN pin
+    template< 
+          typename MosiPin_t //, Config_t::Pin_MOSI/DN pin
         , typename MisoPin_t //< MISO output pin
         , typename SerialClockPin_t  //< Clock pin
     >
     struct SpiPins
     {
-        static constexpr ChipSelectPin_t cs = {};
         static constexpr MosiPin_t mosi = {};
         static constexpr MisoPin_t miso = {};
         static constexpr SerialClockPin_t sck = {};
     };
-       
+
     constexpr size_t SpiDefaultBaudRate = 6000000; //< 6MHz
 
     /** Specify a Compile-time configuration for SPI
     * @see SpiRuntimeConfig to set a flexible mode at runtime i.e. multiple slave devices
     * @note For Soft-Device implementations this can create more optimal (smaller+faster) code than using a runtime configuration
     */
-    template<SpiMode Mode, SpiBitOrder BitOrder, size_t BaudRate = SpiDefaultBaudRate  >
+    template<
+        typename ChipSelectPin_t //< Device select pin(s)
+        , SpiMode Mode
+        , SpiBitOrder BitOrder
+        , size_t BaudRate = SpiDefaultBaudRate  >
     struct SpiConfig
     {
+        static constexpr ChipSelectPin_t chipSelect = {};
         static constexpr size_t baudRate = BaudRate;
         static constexpr SpiMode mode = Mode;
         static constexpr SpiBitOrder bitOrder = BitOrder;
@@ -88,6 +92,7 @@ namespace BareCpper
     */
     struct SpiRuntimeConfig
     {
+        int/** TODO: Runtime pin addressing */ chipSelect;
         const size_t baudRate = SpiDefaultBaudRate;
         const SpiMode mode;
         const SpiBitOrder bitOrder;
@@ -104,42 +109,70 @@ namespace BareCpper
     * @note May specialise based on Config_t is SpiRuntimeConfig or SpiConfig etc
     * @todo Could specialise for Async, Soft, HW device options alsos
     */
-    template< typename Pins_t, typename Config_t, typename PlatformConfig_t >
+    template< typename Pins_t, typename PlatformConfig_t >
     class SpiImpl;
 
-    template< typename Pins_t, typename Config_t, typename PlatformConfig_t = std::nullopt_t >
-    class Spi : public IoDescriptor
+    template< typename Pins_t, typename PlatformConfig_t = std::nullopt_t >
+    class Spi
     {
     public:
-        using impl_t = SpiImpl<Pins_t, Config_t, PlatformConfig_t>;
+        using spi_t = Spi< Pins_t, PlatformConfig_t>;
+        using impl_t = SpiImpl<Pins_t, PlatformConfig_t>;
         using pins_t = Pins_t;
-        using config_t = Config_t;
         using platformConfig_t = PlatformConfig_t; ///< Optional per-platform configuration i.e. Multiple device selection and extended configuration etc
 
+        template< typename Config_t >
+        class Instance : public IoDescriptor
+        {
+        public:
+            Instance(spi_t* device);
+
+            bool initialise();
+
+            /** Setup SPI peripheral including setting ChipSelect Pin IO states
+             * @param config  Device specific config
+             * @return True on success, false on failure
+            */
+            bool configure(const Config_t& config = {});
+
+            /** Start SPI clock and select ChipSelect Pin
+            */
+            bool enable();
+
+            /** Stop SPI clock and deselect ChipSelect Pin
+            */
+            bool disable();
+
+            int32_t read(uint8_t* const buffer, const uint16_t bufferLength, const bool doStop = true);
+
+            int32_t write(const uint8_t* const buffer, const uint16_t bufferLength, const bool doStop = true);
+
+            int32_t transfer(const SpiMessage& message);
+
+        protected:
+            spi_t* device_;
+            Config_t config_;
+        };
+
+
+    public:
         Spi();
 
         bool initialise(
               const Pins_t& pins = {}
-            , const Config_t& config = {}
             , const PlatformConfig_t& platformConfig = {} );
 
-        bool enable();
+        template< typename Config_t >
+        Instance<Config_t> makeInstance()
+        {
+            return Instance<Config_t>(this);
+        }
 
-        bool disable();
-
-        int32_t read(uint8_t* const buffer, const uint16_t bufferLength, const bool doStop = true);
-
-        int32_t write(const uint8_t* const buffer, const uint16_t bufferLength, const bool doStop = true);
-
-
-        int32_t transfer(const SpiMessage& message);
     private:
 
         bool initialiseGpio(const Pins_t& pins, const PlatformConfig_t& platformConfig);
 
-    private:
-        Pins_t pins_ = {};
-        Config_t config_ = {};
+    protected:
         impl_t impl_ = {};
     };
 

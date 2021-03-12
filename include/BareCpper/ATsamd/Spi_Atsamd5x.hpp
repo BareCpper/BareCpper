@@ -41,20 +41,39 @@ namespace BareCpper
         static constexpr uint8_t gclkId_SLOW_Src = GclkId_SLOW_Src;// CONF_GCLK_SERCOM2_SLOW_SRC;
     };
 
-    template< typename Pins_t, typename Config_t, typename PlatformConfig_t = std::nullopt_t >
+    template< typename Pins_t, typename PlatformConfig_t = std::nullopt_t >
     class SpiImpl
     {
     public:
-        using config_t = Config_t;
         using platformConfig_t = PlatformConfig_t;
 
-        bool initialise(const config_t& config, const platformConfig_t& platformConfig)
+        bool initialise(const platformConfig_t& platformConfig)
         {
+            platformConfig_ = platformConfig;
             return initialiseClock(platformConfig)
-                && initialiseDevice(config, platformConfig)
-                //&& initialiseAsync(config, platformConfig)
-                //&& initialiseGpio(config, platformConfig)
+                && initialiseDevice(platformConfig)
+                //&& initialiseAsync(platformConfig)
+                //&& initialiseGpio(platformConfig)
                 ;
+        }
+
+        template<typename Config_t>
+        bool configure(const Config_t& config)
+        {
+            using BaudBit_t = decltype(hw_->BAUD.reg);
+            const BaudBit_t baudBit = static_cast<BaudBit_t>((static_cast<float>(platformConfig_.gclkId_CORE_Freq) / static_cast<float>(2 * config.baudRate)) - 1);
+
+            //SERCOM_CRITICAL_SECTION_ENTER();
+            constexpr uint32_t ctrlAMask = SERCOM_SPI_CTRLA_DORD | SERCOM_SPI_CTRLA_CPOL | SERCOM_SPI_CTRLA_CPHA;
+            const uint32_t ctrlA = (config.bitOrder == SpiBitOrder::LSBFirst ? SERCOM_SPI_CTRLA_DORD : 0)  ///@todo Support selecting slave modes?
+                | (spiClockPolarity(config.mode) == SpiClockPolarity::Cpol1 ? SERCOM_SPI_CTRLA_CPOL : 0)
+                | (spiClockPhase(config.mode) == SpiClockPhase::Cpha1 ? SERCOM_SPI_CTRLA_CPHA : 0);
+
+            hw_->CTRLA.reg = (hw_->CTRLA.reg & ~ctrlAMask) | ctrlA;
+            hw_->BAUD.bit.BAUD = baudBit;
+            //SERCOM_CRITICAL_SECTION_LEAVE();
+
+            return true;
         }
 
         bool destroy()
@@ -197,7 +216,7 @@ namespace BareCpper
             return true;
         }
 
-        bool initialiseDevice(const config_t& config, const platformConfig_t& platformConfig)
+        bool initialiseDevice( const platformConfig_t& platformConfig)
         {
             ::Sercom* sercom = ATsamd5x::sercom(platformConfig.sercomIndex);
             if (!sercom)
@@ -217,14 +236,9 @@ namespace BareCpper
 
             while (hw_->SYNCBUSY.bit.SWRST); // Wait for reset
 
-            using BaudBit_t = decltype(hw_->BAUD.reg);
-            const BaudBit_t baudBit = static_cast<BaudBit_t>((static_cast<float>(platformConfig.gclkId_CORE_Freq) / static_cast<float>(2 * config.baudRate)) - 1);
                             
             //SERCOM_CRITICAL_SECTION_ENTER();
             const uint32_t ctrlA = SERCOM_SPI_CTRLA_MODE_SPI_MASTER
-                | (config.bitOrder == SpiBitOrder::LSBFirst ? SERCOM_SPI_CTRLA_DORD : 0)  ///@todo Support selecting slave modes?
-                | (spiClockPolarity(config.mode) == SpiClockPolarity::Cpol1 ? SERCOM_SPI_CTRLA_CPOL : 0)
-                | (spiClockPhase(config.mode) == SpiClockPhase::Cpha1 ? SERCOM_SPI_CTRLA_CPHA : 0)
                 /// @todo Slave SPI only:  | (CONF_SPIAMODE_EN ? SERCOM_SPI_CTRLA_FORM(2) : SERCOM_SPI_CTRLA_FORM(0))
                 | SERCOM_SPI_CTRLA_DOPO(CONF_SPITXPO)
                 | SERCOM_SPI_CTRLA_DIPO(CONF_SPIRXPO)
@@ -242,14 +256,15 @@ namespace BareCpper
 
             /// @todo Slave SPI only:  |addr = (SERCOM_SPI_ADDR_ADDR(CONF_SPIADDR) | SERCOM_SPI_ADDR_ADDRMASK(CONF_SPIADDRMASK));
             hw_->DBGCTRL.bit.DBGSTOP = true;
-            hw_->BAUD.bit.BAUD = baudBit;
             //SERCOM_CRITICAL_SECTION_LEAVE();
 
             return true;
         }
 
+
     private:
         SercomSpi* hw_ = nullptr;
+        platformConfig_t platformConfig_;
     };
 
 

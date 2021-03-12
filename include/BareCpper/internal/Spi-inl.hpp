@@ -47,9 +47,9 @@ namespace BareCpper
     static_assert(spiMode(SpiClockPolarity::Cpol1, SpiClockPhase::Cpha0) == SpiMode::Mode2);
     static_assert(spiMode(SpiClockPolarity::Cpol1, SpiClockPhase::Cpha1) == SpiMode::Mode3);
    
-    template< typename Pins_t, typename Config_t, typename PlatformConfig_t >
-    Spi<Pins_t,Config_t,PlatformConfig_t>::Spi()
-     : IoDescriptor {
+    template< typename Pins_t, typename PlatformConfig_t >
+    Spi<Pins_t,PlatformConfig_t>::Spi()
+     : /* IoDescriptor {
           [](IoDescriptor& descriptor, uint8_t* const buffer, const uint16_t bufferLength) ->int32_t
             {
                 return reinterpret_cast<Spi&>(descriptor).read(buffer, bufferLength);
@@ -59,28 +59,22 @@ namespace BareCpper
                 return reinterpret_cast<Spi&>(descriptor).write(buffer, bufferLength);
             } 
     }
-    , config_{}
-    , impl_{}
+    ,*/
+     impl_{}
     {}
 
-    template< typename Pins_t, typename Config_t, typename PlatformConfig_t>
-    bool Spi<Pins_t, Config_t, PlatformConfig_t>::initialise(
+    template< typename Pins_t, typename PlatformConfig_t>
+    bool Spi<Pins_t, PlatformConfig_t>::initialise(
           const Pins_t& pins
-        , const Config_t& config
         , const PlatformConfig_t& platformConfig)
     {
-        pins_ = pins;
-        config_ = config;
         return initialiseGpio(pins, platformConfig)
-            && impl_.initialise(config_, platformConfig);
+            && impl_.initialise(platformConfig);
     }
 
-    template< typename Pins_t, typename Config_t, typename PlatformConfig_t>
-    bool Spi<Pins_t, Config_t, PlatformConfig_t>::initialiseGpio(const Pins_t& pins, const PlatformConfig_t& platformConfig)
+    template< typename Pins_t, typename PlatformConfig_t>
+    bool Spi<Pins_t, PlatformConfig_t>::initialiseGpio(const Pins_t& pins, const PlatformConfig_t& platformConfig)
     {
-        gpioDirectionOut(pins.cs);// Set pin direction to out
-        gpioOutHigh(pins.cs);
-
         gpioDirectionIn(pins.miso);// Set pin direction to input
         gpioPullDisable(pins.miso);
         gpioFunction(pins.miso, Function::Spi, platformConfig);
@@ -96,30 +90,65 @@ namespace BareCpper
         return true;
     }
 
-    template< typename Pins_t, typename Config_t, typename PlatformConfig_t>
-    bool Spi<Pins_t, Config_t, PlatformConfig_t>::enable()
+    template< typename Pins_t, typename PlatformConfig_t >
+    template< typename Config_t >
+    Spi<Pins_t, PlatformConfig_t>::Instance<Config_t>::Instance(spi_t* device)
+        : device_(device)
+        , config_{}
+    {}
+
+    template< typename Pins_t, typename PlatformConfig_t >
+    template< typename Config_t >
+    bool Spi<Pins_t, PlatformConfig_t>::Instance<Config_t>::initialise()
     {
-        return impl_.enable();
+        // @todo Should only be done once but occurs per instance!?!?
+        if (!device_->initialise())
+            return false;
+
+        return true;
     }
 
-    template< typename Pins_t, typename Config_t, typename PlatformConfig_t>
-    bool Spi<Pins_t, Config_t, PlatformConfig_t>::disable()
+    template< typename Pins_t, typename PlatformConfig_t >
+    template< typename Config_t >
+    bool Spi<Pins_t, PlatformConfig_t>::Instance<Config_t>::configure(const Config_t& config)
     {
-        return impl_.disable();
+        config_ = config;
+        gpioDirectionOut(config_.chipSelect);// Set pin direction to out
+        gpioOutHigh(config_.chipSelect); //< Innactive slave select
+
+        return true;
     }
 
-
-    template< typename Pins_t, typename Config_t, typename PlatformConfig_t >
-    int32_t Spi<Pins_t, Config_t, PlatformConfig_t>::transfer(const SpiMessage& message)
+    template< typename Pins_t, typename PlatformConfig_t >
+    template< typename Config_t >
+    int32_t Spi<Pins_t, PlatformConfig_t>::Instance<Config_t>::transfer(const SpiMessage& message)
     {
-        return impl_.transfer(message);
+        return device_->impl_.transfer(message);
     }
 
-    template< typename Pins_t, typename Config_t, typename PlatformConfig_t >
-    int32_t Spi<Pins_t, Config_t, PlatformConfig_t>::read(uint8_t* const buffer, const uint16_t bufferLength, const bool doStop)
+    template< typename Pins_t, typename PlatformConfig_t >
+    template< typename Config_t >
+    bool Spi<Pins_t, PlatformConfig_t>::Instance<Config_t>::enable()
     {
-        /// @todo CS may be hardware controlled!
-        BareCpper::gpioOutLow(pins_.cs); //< Start/resume comms
+        const bool retVal = device_->impl_.configure(config_) && device_->impl_.enable();
+        BareCpper::gpioOutLow(config_.chipSelect); //< Start/resume comms
+        return retVal;
+    }
+
+    template< typename Pins_t, typename PlatformConfig_t >
+    template< typename Config_t >
+    bool Spi<Pins_t, PlatformConfig_t>::Instance<Config_t>::disable()
+    {
+        BareCpper::gpioOutHigh(config_.chipSelect); //< Stop/Cancel comms
+        return device_->impl_.disable();
+    }
+
+    template< typename Pins_t, typename PlatformConfig_t >
+    template< typename Config_t >
+    int32_t Spi<Pins_t, PlatformConfig_t>::Instance<Config_t>::read(uint8_t* const buffer, const uint16_t bufferLength, const bool doStop)
+    {
+        if (!enable())
+            return -1;
 
         SpiMessage message = {};
         message.bufferLength = bufferLength;
@@ -129,16 +158,17 @@ namespace BareCpper
 
         if (doStop || (retVal == 0))
         {
-            BareCpper::gpioOutHigh(pins_.cs); //< Stop comms
+            disable(); //< Stop comms
         }
         return retVal;
     }
 
-    template< typename Pins_t, typename Config_t, typename PlatformConfig_t >
-    int32_t Spi<Pins_t, Config_t, PlatformConfig_t>::write(const uint8_t* const buffer, const uint16_t bufferLength, const bool doStop )
+    template< typename Pins_t, typename PlatformConfig_t >
+    template< typename Config_t >
+    int32_t Spi<Pins_t, PlatformConfig_t>::Instance<Config_t>::write(const uint8_t* const buffer, const uint16_t bufferLength, const bool doStop )
     {
-        /// @todo CS may be hardware controlled!
-        BareCpper::gpioOutLow(pins_.cs); //< Start/resume comms
+        if (!enable())
+            return -1;
 
         SpiMessage message = {};
         message.bufferLength = bufferLength;
@@ -148,7 +178,7 @@ namespace BareCpper
 
         if (doStop || (retVal <= 0))
         {
-            BareCpper::gpioOutHigh(pins_.cs); //< Stop comms
+            disable(); //< Stop comms
         }
         return retVal;
 
