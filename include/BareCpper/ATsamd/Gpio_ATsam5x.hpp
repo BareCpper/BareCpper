@@ -310,8 +310,8 @@ namespace BareCpper {
         {
         case 0:
             return std::is_same_v<Pin_t, PA06> ? Peripheral::D :
-                   std::is_same_v<Pin_t, PA04> ? Peripheral::C :
-                   std::is_same_v<Pin_t, PA05> ? Peripheral::C :
+                   std::is_same_v<Pin_t, PA04> ? Peripheral::D :
+                   std::is_same_v<Pin_t, PA05> ? Peripheral::D :
                                                  Peripheral::Off;
         case 1:
             return std::is_same_v<Pin_t, PB22> ? Peripheral::C :
