@@ -49,18 +49,7 @@ namespace BareCpper
    
     template< typename Pins_t, typename PlatformConfig_t >
     Spi<Pins_t,PlatformConfig_t>::Spi()
-     : /* IoDescriptor {
-          [](IoDescriptor& descriptor, uint8_t* const buffer, const uint16_t bufferLength) ->int32_t
-            {
-                return reinterpret_cast<Spi&>(descriptor).read(buffer, bufferLength);
-            }
-        , [](IoDescriptor& descriptor, const uint8_t* const buffer, const uint16_t bufferLength) ->int32_t
-            {
-                return reinterpret_cast<Spi&>(descriptor).write(buffer, bufferLength);
-            } 
-    }
-    ,*/
-     impl_{}
+        : impl_{}
     {}
 
     template< typename Pins_t, typename PlatformConfig_t>
@@ -69,7 +58,7 @@ namespace BareCpper
         , const PlatformConfig_t& platformConfig)
     {
         return initialiseGpio(pins, platformConfig)
-            && impl_.initialise(platformConfig);
+            && impl_.initialise(pins, platformConfig);
     }
 
     template< typename Pins_t, typename PlatformConfig_t>
@@ -93,8 +82,18 @@ namespace BareCpper
     template< typename Pins_t, typename PlatformConfig_t >
     template< typename Config_t >
     Spi<Pins_t, PlatformConfig_t>::Instance<Config_t>::Instance(spi_t* device)
-        : device_(device)
-        , config_{}
+        :  IoDescriptor {
+             [](IoDescriptor& descriptor, uint8_t* const buffer, const uint16_t bufferLength) ->int32_t
+               {
+                   return reinterpret_cast<Instance&>(descriptor).read(buffer, bufferLength);
+               }
+           , [](IoDescriptor& descriptor, const uint8_t* const buffer, const uint16_t bufferLength) ->int32_t
+               {
+                   return reinterpret_cast<Instance&>(descriptor).write(buffer, bufferLength);
+               }
+       }
+       , device_(device)
+       , config_{}
     {}
 
     template< typename Pins_t, typename PlatformConfig_t >
