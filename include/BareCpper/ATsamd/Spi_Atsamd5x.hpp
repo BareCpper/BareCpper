@@ -2,6 +2,63 @@
 #  error "Include <BareCpper/Spi.hpp> instead of this file."
 #endif
 
+#include "Serial.hpp" //< Emteq::Serial//< TEMPEMPEMPMEPME
+
+extern "C" void yield(void);
+extern "C" void delay(unsigned long ms);
+
+static void dbg_where(const char* tag, const bool endLine)
+{
+#if 0
+    endLine ? Emteq::Serial.println(tag) : Emteq::Serial.print(tag);
+    for (int i = 0; i < 100; ++i)
+    {
+        ::yield(); // yield run usb background task
+        ::delay(10);
+    }
+#endif
+}
+static void dbg_start(const char* tag)
+{
+    dbg_where(tag, false);
+}
+static void dbg_end()
+{
+    dbg_where("=DONE", true);
+}
+
+class ScopeDebug
+{
+public:
+    ScopeDebug(const char* tag)
+    {
+        dbg_start(tag);
+    }
+
+    void tag()
+    {
+        dbg_where(pos, false );
+        ++pos[1];
+    }
+
+    ~ScopeDebug()
+    {
+        dbg_end();
+    }
+
+private:
+    char pos[3] = { '.', '0', '\0' };
+};
+
+class TagDebug
+{
+public:
+    TagDebug(const char* tag)
+    {
+        dbg_where(tag,true);
+    }
+};
+
 #if !__SAMD51__
 #  error "SAMD library error, please check and update accordingly."
 #endif
@@ -23,8 +80,6 @@
 #define CONF_SPISSDE 0 ///< Slave Select Low Detect Enable
 #define CONF_SPIMSSEN 0x0 ///< Master Slave Select Enable
 #define CONF_SPIPLOADEN 0 ///< Data Preload Enable
-#define CONF_SPIRXPO 2 ///< Data In Pinout
-#define CONF_SPITXPO 3 ///< Data Out Pinout
 
 #ifndef SERCOM_SPI_CTRLA_MODE_SPI_MASTER
 #define SERCOM_SPI_CTRLA_MODE_SPI_MASTER SERCOM_SPI_CTRLA_MODE(0x03) //< @todo Is the CTRLA SPI MASTER  defined somewhere?
@@ -47,11 +102,11 @@ namespace BareCpper
     public:
         using platformConfig_t = PlatformConfig_t;
 
-        bool initialise(const platformConfig_t& platformConfig)
+        bool initialise(const Pins_t& pins, const platformConfig_t& platformConfig)
         {
             platformConfig_ = platformConfig;
             return initialiseClock(platformConfig)
-                && initialiseDevice(platformConfig)
+                && initialiseDevice(pins, platformConfig)
                 //&& initialiseAsync(platformConfig)
                 //&& initialiseGpio(platformConfig)
                 ;
@@ -60,6 +115,8 @@ namespace BareCpper
         template<typename Config_t>
         bool configure(const Config_t& config)
         {
+            ScopeDebug dbg("spi_atsamd5::configure");
+
             using BaudBit_t = decltype(hw_->BAUD.reg);
             const BaudBit_t baudBit = static_cast<BaudBit_t>((static_cast<float>(platformConfig_.gclkId_CORE_Freq) / static_cast<float>(2 * config.baudRate)) - 1);
 
@@ -114,6 +171,8 @@ namespace BareCpper
 
         int32_t transfer(const SpiMessage& message)
         {
+            ScopeDebug dbg("spi_atsamd5::transfer");
+
             const uint8_t* txBuffer = message.txBuffer;
             uint8_t* rxBuffer = message.rxBuffer;
 
@@ -173,16 +232,19 @@ namespace BareCpper
 
         bool enableSync()
         {
+            ScopeDebug dbg("spi_atsamd5::enableSync");
+
             // SERCOM_CRITICAL_SECTION_ENTER();
             hw_->CTRLA.bit.ENABLE = true;
             while (hw_->SYNCBUSY.bit.SWRST | hw_->SYNCBUSY.bit.ENABLE);
             // SERCOM_CRITICAL_SECTION_LEAVE();
-
             return true;
         }
 
         bool disableSync()
         {
+            ScopeDebug dbg("spi_atsamd5::disableSync");
+
             hw_->CTRLA.bit.ENABLE = false;
             while (hw_->SYNCBUSY.bit.SWRST | hw_->SYNCBUSY.bit.ENABLE);
 
@@ -191,6 +253,8 @@ namespace BareCpper
 
         bool initialiseClock( const platformConfig_t& platformConfig)
         {
+            ScopeDebug dbg("spi_atsamd5::initialiseClock");
+
             /// @TODO Power-Saving: TBC if Slow-Clock even necessary
 
             constexpr ATsamd5x::SercomParameters params = ATsamd5x::sercomParameters(platformConfig.sercomIndex);
@@ -216,8 +280,10 @@ namespace BareCpper
             return true;
         }
 
-        bool initialiseDevice( const platformConfig_t& platformConfig)
+        bool initialiseDevice(const Pins_t& pins, const platformConfig_t& platformConfig)
         {
+            ScopeDebug dbg("spi_Atsamd5x::initialise");
+
             ::Sercom* sercom = ATsamd5x::sercom(platformConfig.sercomIndex);
             if (!sercom)
                 return false;
@@ -236,12 +302,31 @@ namespace BareCpper
 
             while (hw_->SYNCBUSY.bit.SWRST); // Wait for reset
 
+            ///##################################
+            ///TODO: Fix this as its a maintenance disaster waiting to break when pinout is changed...!
+            ///##################################
+            uint8_t DOPO = 0;
+            uint8_t DIPO = 0;
+
+            // DI == DIPO
+            // DO==3 => DOPO=2
+            // DO==0 => DOPO=0
+            switch (platformConfig.sercomIndex)
+            {       //Mosi, Miso, Sck
+            case 0: /*PA04,PA06,PA05*/ DOPO = 0; DIPO = 2; break; //PA04 = 0, PA06 = 2, PA05 = 1
+            case 1: /*PB23,PB22,PA17*/ DOPO = 3; DIPO = 2; break; //PB23=3, PB22 = 2, PA17=1
+            case 4: /*PB11,PB08,PB09*/ DOPO = 3; DIPO = 0; break; //PB11 = 3, PB08=0, PB09=1
+            }
+            ///##################################
+            ///TODO: Fix this as its a maintenance disaster waiting to break when pinout is changed...!
+            ///##################################
+
                             
             //SERCOM_CRITICAL_SECTION_ENTER();
             const uint32_t ctrlA = SERCOM_SPI_CTRLA_MODE_SPI_MASTER
                 /// @todo Slave SPI only:  | (CONF_SPIAMODE_EN ? SERCOM_SPI_CTRLA_FORM(2) : SERCOM_SPI_CTRLA_FORM(0))
-                | SERCOM_SPI_CTRLA_DOPO(CONF_SPITXPO)
-                | SERCOM_SPI_CTRLA_DIPO(CONF_SPIRXPO)
+                | SERCOM_SPI_CTRLA_DOPO(DOPO)
+                | SERCOM_SPI_CTRLA_DIPO(DIPO)
                 | (CONF_SPIIBON ? SERCOM_SPI_CTRLA_IBON : 0)
                 | (CONF_SPIRUNSTDBY ? SERCOM_SPI_CTRLA_RUNSTDBY : 0);
             const uint32_t ctrlB = ((CONF_SPIRXEN ? SERCOM_SPI_CTRLB_RXEN : 0)
