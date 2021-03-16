@@ -15,10 +15,10 @@ namespace BareCpper {
     template<std::size_t PinIndex>
     struct PortPins<PortIndex>::Pin ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /**<PinIndex, Valid<(0 <= PinIndex && PinIndex <= 31)>*/
     {
-        constexpr PinId id() const
+        static constexpr PinId id()
         { return PinId{ PortIndex, PinIndex }; }
 
-        constexpr PortRegister_t mask() const 
+        static constexpr PortRegister_t mask()
         { return PortRegister_t(1U) << PinIndex; }
 
         template< typename Pin_t>

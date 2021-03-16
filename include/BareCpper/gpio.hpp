@@ -37,12 +37,12 @@ namespace BareCpper
 
         constexpr bool operator < (const PinId& rhs) const
         {
-            return std::tie(port, pin) < std::tie(port, pin);
+            return std::tie(port, pin) < std::tie(rhs.port, rhs.pin);
         }
 
         constexpr bool operator == (const PinId& rhs) const
         {
-            return std::tie(port, pin) == std::tie(port, pin);
+            return std::tie(port, pin) == std::tie(rhs.port, rhs.pin);
         }
     };
 
