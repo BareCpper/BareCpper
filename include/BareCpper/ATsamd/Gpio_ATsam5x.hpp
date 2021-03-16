@@ -15,13 +15,19 @@ namespace BareCpper {
     template<std::size_t PinIndex>
     struct PortPins<PortIndex>::Pin ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /**<PinIndex, Valid<(0 <= PinIndex && PinIndex <= 31)>*/
     {
-        //struct Functions;
+        constexpr PinId id() const
+        { return PinId{ PortIndex, PinIndex }; }
 
-        constexpr static uint8_t port = PortIndex;
-        constexpr static uint8_t pin = PinIndex;
-        constexpr static PortRegister_t mask = (PortRegister_t(1U) << PinIndex);
+        constexpr PortRegister_t mask() const 
+        { return PortRegister_t(1U) << PinIndex; }
 
-        using Input = InputPin<PortPins<PortIndex>::Pin<PinIndex> >;
+        template< typename Pin_t>
+        constexpr bool operator == (const Pin_t& rhs) const
+        { return id() == rhs.id(); }
+
+        template< typename Pin_t>
+        constexpr bool operator < (const Pin_t& rhs) const
+        { return id() < rhs.id(); }
     };
   
     template<>
@@ -234,49 +240,49 @@ namespace BareCpper {
     void gpioEnableInput( const Pin_t& pin )
     {
         using ::Port;
-        PORT->Group[pin.port].PINCFG[pin.pinport].bit.INEN = true;
+        PORT->Group[pin.id().port].PINCFG[pin.pinport].bit.INEN = true;
     }
 
     template<typename Pin_t>
     void gpioDirectionIn( const Pin_t& pin )
     {
         using ::Port;
-        PORT->Group[pin.port].DIRCLR.reg = (1 << pin.pin); // clear DIR
+        PORT->Group[pin.id().port].DIRCLR.reg = (1 << pin.id().pin); // clear DIR
     }
 
     template<typename Pin_t>
     void gpioDirectionOut( const Pin_t& pin )
     {
         using ::Port;
-        PORT->Group[pin.port].DIRSET.reg = (1 << pin.pin); // Set DIR
+        PORT->Group[pin.id().port].DIRSET.reg = (1 << pin.id().pin); // Set DIR
     }
 
     template<typename Pin_t>
     void gpioPullEnable( const Pin_t& pin )
     {
         using ::Port;
-        PORT->Group[pin.port].PINCFG[pin.pin].bit.PULLEN = true;
+        PORT->Group[pin.id().port].PINCFG[pin.id().pin].bit.PULLEN = true;
     }
 
     template<typename Pin_t>
     void gpioPullDisable( const Pin_t& pin )
     {
         using ::Port;
-        PORT->Group[pin.port].PINCFG[pin.pin].bit.PULLEN = false;
+        PORT->Group[pin.id().port].PINCFG[pin.id().pin].bit.PULLEN = false;
     }
 
     template<typename Pin_t>
     void gpioOutHigh( const Pin_t& pin )
     {
         using ::Port;
-        PORT->Group[pin.port].OUTSET.reg = pin.mask; // Drive high
+        PORT->Group[pin.id().port].OUTSET.reg = pin.mask(); // Drive high
     }
 
     template<typename Pin_t>
     void gpioOutLow( const Pin_t& pin )
     {
         using ::Port;
-        PORT->Group[pin.port].OUTCLR.reg = pin.mask; // Drive low
+        PORT->Group[pin.id().port].OUTCLR.reg = pin.mask(); // Drive low
     }
 
     template<typename Pin_t>
@@ -337,15 +343,15 @@ namespace BareCpper {
 
         using ::Port; //< Disambiguate Sam.h vs BareCpper::Gpio
 
-        PORT->Group[pin.port].PINCFG[pin.pin].bit.PMUXEN = (peripheral != Peripheral::Off); //< 0xF is maximum valid function
+        PORT->Group[pin.id().port].PINCFG[pin.id().pin].bit.PMUXEN = (peripheral != Peripheral::Off); //< 0xF is maximum valid function
 
-        if (pin.pin & 0x1) // Odd numbered pin 
+        if (pin.id().pin & 0x1) // Odd numbered pin 
         {
-            PORT->Group[pin.port].PMUX[pin.pin / 2].bit.PMUXO = static_cast<uint8_t>(peripheral);
+            PORT->Group[pin.id().port].PMUX[pin.id().pin / 2].bit.PMUXO = static_cast<uint8_t>(peripheral);
         }
         else // Even numbered pin
         {
-            PORT->Group[pin.port].PMUX[pin.pin / 2].bit.PMUXE = static_cast<uint8_t>(peripheral);
+            PORT->Group[pin.id().port].PMUX[pin.id().pin / 2].bit.PMUXE = static_cast<uint8_t>(peripheral);
         }
     }
 

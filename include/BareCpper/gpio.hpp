@@ -10,6 +10,7 @@
 #define BARECPPER_GPIO_H_
 
 #include <cstdint>
+#include <tuple> //< std::tie
 #include <optional> //< std::nullopt
 #include "Common.hpp"
 #include "Sub0Std.hpp"
@@ -27,6 +28,23 @@
 */
 namespace BareCpper
 {		
+
+    //struct Functions;
+    struct PinId
+    {
+        uint8_t port;
+        uint8_t pin;
+
+        constexpr bool operator < (const PinId& rhs) const
+        {
+            return std::tie(port, pin) < std::tie(port, pin);
+        }
+
+        constexpr bool operator == (const PinId& rhs) const
+        {
+            return std::tie(port, pin) == std::tie(port, pin);
+        }
+    };
 
     template< std::size_t PinIndex, typename PinT > struct PinN;
     template< typename PinT > struct PinN<0u, PinT> { typedef PinT Pin0; };
@@ -179,7 +197,7 @@ namespace BareCpper
     template< typename PinsT >
     constexpr PortRegister_t mask(const PinsT& pin)
     {
-        return pin.mask;
+        return pin.mask();
     }
 
     template< typename FirstPinT, typename ...PinsT >
