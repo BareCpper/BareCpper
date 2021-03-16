@@ -302,26 +302,19 @@ namespace BareCpper
 
             while (hw_->SYNCBUSY.bit.SWRST); // Wait for reset
 
-            ///##################################
-            ///TODO: Fix this as its a maintenance disaster waiting to break when pinout is changed...!
-            ///##################################
-            uint8_t DOPO = 0;
-            uint8_t DIPO = 0;
+            constexpr std::optional<uint8_t> sercomIndex = ATsamd5x::sercomForPins(pins.mosi, pins.miso, pins.sck);
+            static_assert((bool)sercomIndex, "Pin combination {Mosi, Miso, Sck} must map to a valid SERCOM peripheral" );
+            static_assert(sercomIndex == platformConfig.sercomIndex); //< Todo: Deprecate platformConfig.sercomIndex
 
-            // DI == DIPO
-            // DO==3 => DOPO=2
-            // DO==0 => DOPO=0
-            switch (platformConfig.sercomIndex)
-            {       //Mosi, Miso, Sck
-            case 0: /*PA04,PA06,PA05*/ DOPO = 0; DIPO = 2; break; //PA04 = 0, PA06 = 2, PA05 = 1
-            case 1: /*PB23,PB22,PA17*/ DOPO = 3; DIPO = 2; break; //PB23=3, PB22 = 2, PA17=1
-            case 4: /*PB11,PB08,PB09*/ DOPO = 3; DIPO = 0; break; //PB11 = 3, PB08=0, PB09=1
-            }
-            ///##################################
-            ///TODO: Fix this as its a maintenance disaster waiting to break when pinout is changed...!
-            ///##################################
+            constexpr std::optional<ATsamd5x::SercomPads> pads = ATsamd5x::sercomPadsForPins( pins.mosi, pins.miso, pins.sck );
+            static_assert( (bool)pads);
+            static_assert((pads->mosi == 0) || (pads->mosi == 3)); //, MOSI must always be PAd=0 or PAD=3
+            static_assert((pads->miso >= 0) || (pads->miso <= 3)); //, MOSI must always be PAd=0 or PAD=3
+            static_assert(pads->sck == 1); //, SCK must always be PAd=1
 
-                            
+            constexpr uint8_t DIPO = pads->miso;
+            constexpr uint8_t DOPO = (pads->mosi == 0) ? 0 : 2;
+           
             //SERCOM_CRITICAL_SECTION_ENTER();
             const uint32_t ctrlA = SERCOM_SPI_CTRLA_MODE_SPI_MASTER
                 /// @todo Slave SPI only:  | (CONF_SPIAMODE_EN ? SERCOM_SPI_CTRLA_FORM(2) : SERCOM_SPI_CTRLA_FORM(0))
