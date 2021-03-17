@@ -48,12 +48,9 @@ namespace ATsamd5x {
     /** Finds the first SercomIndex that is common to all provided Pins (Should only ever be one match!)
     * @note Approach is to find the First SercomIndex candidate and then find subsequenct 2 matches
     * @warning This approach does not succeed if sercomMux() has dusplication which must eb avoided! */
-    template< typename ... Pins_t>
-    constexpr std::optional<uint8_t> sercomForPins(const Pins_t& ... pins )
+    template< size_t pinCount>
+    constexpr std::optional<uint8_t> sercomForPins(const PinId(&ids)[pinCount] )
     {
-        const size_t pinCount = sizeof...(pins);
-        const PinId ids[pinCount] = { id(pins)... };
-
         constexpr auto muxes = sercomMux();
         for ( auto iMux = std::begin(muxes); iMux != std::end(muxes); ++iMux )
         {
@@ -80,9 +77,9 @@ namespace ATsamd5x {
     }
 
     ///@{ Static tests - Common known combinations
-    static_assert(*ATsamd5x::sercomForPins( PA04(), PA06(), PA05() ) == 0);
-    static_assert(*ATsamd5x::sercomForPins( PB23(), PB22(), PA17() ) == 1);
-    static_assert(*ATsamd5x::sercomForPins( PB11(), PB08(), PB09() ) == 4);
+    static_assert(*ATsamd5x::sercomForPins({ id<PA04>(), id<PA06>(),  id<PA05>() } ) == 0);
+    static_assert(*ATsamd5x::sercomForPins({ id<PB23>(), id<PB22>(),  id<PA17>() } ) == 1);
+    static_assert(*ATsamd5x::sercomForPins({ id<PB11>(), id<PB08>(),  id<PB09>() } ) == 4);
     ///@} Static tests
 
 #if 0// @NOTE WIP - Superceeded by sercomForPins() ???

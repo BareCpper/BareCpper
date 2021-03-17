@@ -68,24 +68,6 @@
 namespace BareCpper {
 namespace ATsamd5x {
 
-    /* @param[in] function  The pin function is given by a 32 - bit wide bitfield found in the header files for the device
-                            e.g. PINMUX_PA12C_SERCOM2_PAD0
-    */
-    inline void setPinFunction(const uint8_t iPort, const uint8_t iPin, const uint32_t function)
-    {
-        using ::Port; //< Disambiguate Sam.h vs BareCpper::Gpio
-
-        PORT->Group[iPort].PINCFG[iPin].bit.PMUXEN = (function <= PORT_PMUX_PMUXE_Msk); //< 0xF is maximum valid function
-
-        if (iPin & 0x1) // Odd numbered pin 
-        {
-            PORT->Group[iPort].PMUX[iPin / 2].bit.PMUXO = function;
-        }
-        else // Even numbered pin
-        {
-            PORT->Group[iPort].PMUX[iPin / 2].bit.PMUXE = function;
-        }
-    }
 
 } //END: ATsamd5x
 } //END: BareCpper

@@ -10,6 +10,8 @@
 #include <cstdint>
 #include <iterator> //< std::begin, std::end, std::distance
 #include "../Common.hpp" //< BareCpper::pollForCondition
+#include "Gpio_ATsam5x.hpp" //< BareCpper::pollForCondition
+
 #include "sam.h"
 #include "sercom.h"
 
@@ -47,7 +49,6 @@ void I2C_0_example( void )
 #define TWI_RUNSTDBY 0
 #define TWI_DEBUG_STOP_MODE 0
 #define TWI_SPEED 0x00 // Speed: Standard/Fast mode
-#define TWI_SERCOM SERCOM2 ///< @todo hard coded as Sercom2
 
 /**#######################################
  @todo Determine optimal fast and slow clocks at 48MHz!?!?
@@ -152,7 +153,7 @@ namespace BareCpper
         /// @todo Use GPIO as pins b=must currently be on the same Port!
         // iPinScl == PA13
         // iPinSda == PA12
-        TwiAsync( const uint8_t iPort, const uint8_t iPinScl, const uint8_t iPinSda )
+        TwiAsync( const PinId pinScl, const PinId pinSda )
             : IoDescriptor{
               []( IoDescriptor& descriptor, uint8_t* const buffer, const uint16_t bufferLength ) ->int32_t
                 {
@@ -164,10 +165,9 @@ namespace BareCpper
                     TwiAsync& twi = reinterpret_cast<TwiAsync&>(descriptor);
                     return twi.writeAsync( buffer, bufferLength );
                 } }
-            , hw_( &(TWI_SERCOM->I2CM) )
-            , iPort_( iPort )
-            , iPinScl_( iPinScl )
-            , iPinSda_( iPinSda )
+            , hw_()
+            , pinScl_( pinScl )
+            , pinSda_( pinSda )
             , fnError_()
             , fnTxComplete_()
             , fnRxComplete_()
@@ -178,6 +178,16 @@ namespace BareCpper
 
         bool initialise()
         {
+            const auto sercomIndex = ATsamd5x::sercomForPins({ pinScl_, pinSda_ });
+            if (!sercomIndex)
+                return false;
+
+            ::Sercom* sercom = ATsamd5x::sercom(*sercomIndex);
+            if (!sercom)
+                return false;
+
+            hw_ = &sercom->I2CM;
+
             return initialiseClock()
                 && initialiseDevice()
                 && initialiseAsync()
@@ -368,7 +378,7 @@ namespace BareCpper
         {
             const uint8_t iHardware = hardwareIndex();
 
-            /// Register to service interupts SERCOM2_0_Handler etc...
+            /// Register to service interupts SERCOM2_0_Handler etc..
             sercom_s[iHardware] = this; /// _sercom_init_irq_param
 
             const IRQn_Type beginIrq = static_cast<IRQn_Type>(SERCOM0_0_IRQn + (iHardware * 4U));
@@ -387,12 +397,12 @@ namespace BareCpper
         {
             //PORT_CRITICAL_SECTION_ENTER();
             using ::Port; //< Disambiguate Sam.h vs BareCpper::Gpio
-            PORT->Group[iPort_].PINCFG[iPinSda_].bit.PULLEN = false;//< SDA, GPIO_PULL_OFF
-            PORT->Group[iPort_].PINCFG[iPinScl_].bit.PULLEN = false;//< SCL, GPIO_PULL_OFF
+            PORT->Group[pinSda_.port].PINCFG[pinSda_.pin].bit.PULLEN = false;//< SDA, GPIO_PULL_OFF
+            PORT->Group[pinScl_.port].PINCFG[pinScl_.pin].bit.PULLEN = false;//< SCL, GPIO_PULL_OFF
             //PORT_CRITICAL_SECTION_LEAVE();
 
-            ATsamd5x::setPinFunction( iPort_, iPinSda_, MUX_PA12C_SERCOM2_PAD0 );
-            ATsamd5x::setPinFunction( iPort_, iPinScl_, MUX_PA13C_SERCOM2_PAD1 );
+            ATsamd5x::setPinFunction( pinSda_, MUX_PA12C_SERCOM2_PAD0 );
+            ATsamd5x::setPinFunction( pinScl_, MUX_PA13C_SERCOM2_PAD1 );
 
             return true;
         }
@@ -619,9 +629,8 @@ namespace BareCpper
     private:
 
         SercomI2cm* hw_;
-        const uint8_t iPort_;
-        const uint8_t iPinScl_;
-        const uint8_t iPinSda_;
+        const PinId pinScl_;
+        const PinId pinSda_;
 
         FnError_t fnError_;
         FnComplete_t fnTxComplete_;

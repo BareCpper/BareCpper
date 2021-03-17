@@ -102,7 +102,7 @@ namespace BareCpper
 
         bool initialise(const Pins_t& pins, const platformConfig_t& platformConfig)
         {
-            constexpr std::optional<uint8_t> sercomIndex = ATsamd5x::sercomForPins(pins.mosi, pins.miso, pins.sck);
+            constexpr std::optional<uint8_t> sercomIndex = ATsamd5x::sercomForPins({ id(pins.mosi), id(pins.miso), id(pins.sck) });
             static_assert((bool)sercomIndex, "Pin combination {Mosi, Miso, Sck} must map to a valid SERCOM peripheral");
 
             gpioFunction(pins.miso, ATsamd5x::sercomPinPeripheral(*sercomIndex, pins.miso));

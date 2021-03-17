@@ -184,6 +184,27 @@ namespace BareCpper {
             , N = 0xD
         };
 
+
+        //TODO: DUplication..refartor
+        /* @param[in] function  The pin function is given by a 32 - bit wide bitfield found in the header files for the device
+                                e.g. PINMUX_PA12C_SERCOM2_PAD0
+        */
+        inline void setPinFunction(const PinId pinId, const uint32_t function)
+        {
+            using ::Port; //< Disambiguate Sam.h vs BareCpper::Gpio
+
+            PORT->Group[pinId.port].PINCFG[pinId.pin].bit.PMUXEN = (function <= PORT_PMUX_PMUXE_Msk); //< 0xF is maximum valid function
+
+            if (pinId.pin & 0x1) // Odd numbered pin 
+            {
+                PORT->Group[pinId.port].PMUX[pinId.pin / 2].bit.PMUXO = function;
+            }
+            else // Even numbered pin
+            {
+                PORT->Group[pinId.port].PMUX[pinId.pin / 2].bit.PMUXE = function;
+            }
+        }
+
         struct SercomMux
         {
             PinId pinId;
@@ -452,6 +473,7 @@ namespace BareCpper {
         gpioPullDisable( pin );
     }
 
+    //TODO: DUplication..refartor
     template<typename Pin_t >
     void gpioFunction(const Pin_t& pin, const std::optional<ATsamd5x::Peripheral> peripheral )
     {
