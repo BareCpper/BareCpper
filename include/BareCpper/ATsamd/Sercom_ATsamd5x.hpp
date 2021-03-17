@@ -31,26 +31,19 @@ namespace ATsamd5x {
         }
     }
 
-    struct SercomParameters
+    struct SercomClocks
     {
         uint8_t gclkId_CORE; ///< SERCOMn_GCLK_ID_CORE
         uint8_t gclkId_SLOW; ///< SERCOM2_GCLK_ID_SLOW
     };
 
-    constexpr SercomParameters sercomParameters(const uint8_t sercomIndex)
+    constexpr SercomClocks sercomClocks(const uint8_t sercomIndex)
     {
         constexpr std::array gclkId_COREs = { SERCOM0_GCLK_ID_CORE, SERCOM1_GCLK_ID_CORE, SERCOM2_GCLK_ID_CORE, SERCOM3_GCLK_ID_CORE, SERCOM4_GCLK_ID_CORE, SERCOM5_GCLK_ID_CORE };
         constexpr std::array gclkId_SLOWs = { SERCOM0_GCLK_ID_SLOW, SERCOM1_GCLK_ID_SLOW, SERCOM2_GCLK_ID_SLOW, SERCOM3_GCLK_ID_SLOW, SERCOM4_GCLK_ID_SLOW, SERCOM5_GCLK_ID_SLOW };
 
         return { (uint8_t)gclkId_COREs[sercomIndex], (uint8_t)gclkId_SLOWs[sercomIndex] };
     }
-
-    struct SercomPads
-    {
-        uint8_t mosi;
-        uint8_t miso;
-        uint8_t sck;
-    };
 
     /** Finds the first SercomIndex that is common to all provided Pins (Should only ever be one match!)
     * @note Approach is to find the First SercomIndex candidate and then find subsequenct 2 matches

@@ -86,11 +86,9 @@ public:
 #endif
 namespace BareCpper
 {
-    template< uint8_t SercomIndex, uint8_t GclkId_CORE_Src, size_t GclkId_CORE_Freq, uint8_t GclkId_SLOW_Src>
+    template< uint8_t GclkId_CORE_Src, size_t GclkId_CORE_Freq, uint8_t GclkId_SLOW_Src>
     struct SpiPlatformConfig
     {
-        static constexpr uint8_t sercomIndex = SercomIndex;
-
         static constexpr uint8_t gclkId_CORE_Src = GclkId_CORE_Src;// CONF_GCLK_SERCOM2_CORE_SRC;
         static constexpr size_t gclkId_CORE_Freq = GclkId_CORE_Freq;
         static constexpr uint8_t gclkId_SLOW_Src = GclkId_SLOW_Src;// CONF_GCLK_SERCOM2_SLOW_SRC;
@@ -104,9 +102,16 @@ namespace BareCpper
 
         bool initialise(const Pins_t& pins, const platformConfig_t& platformConfig)
         {
+            constexpr std::optional<uint8_t> sercomIndex = ATsamd5x::sercomForPins(pins.mosi, pins.miso, pins.sck);
+            static_assert((bool)sercomIndex, "Pin combination {Mosi, Miso, Sck} must map to a valid SERCOM peripheral");
+
+            gpioFunction(pins.miso, ATsamd5x::sercomPinPeripheral(*sercomIndex, pins.miso));
+            gpioFunction(pins.mosi, ATsamd5x::sercomPinPeripheral(*sercomIndex, pins.mosi));
+            gpioFunction(pins.sck, ATsamd5x::sercomPinPeripheral(*sercomIndex, pins.sck));
+
             platformConfig_ = platformConfig;
-            return initialiseClock(platformConfig)
-                && initialiseDevice(pins, platformConfig)
+            return initialiseClock(*sercomIndex, platformConfig)
+                && initialiseDevice(*sercomIndex, pins)
                 //&& initialiseAsync(platformConfig)
                 //&& initialiseGpio(platformConfig)
                 ;
@@ -251,13 +256,13 @@ namespace BareCpper
             return true;
         }
 
-        bool initialiseClock( const platformConfig_t& platformConfig)
+        bool initialiseClock( const uint8_t sercomIndex, const platformConfig_t& platformConfig)
         {
             ScopeDebug dbg("spi_atsamd5::initialiseClock");
 
             /// @TODO Power-Saving: TBC if Slow-Clock even necessary
 
-            constexpr ATsamd5x::SercomParameters params = ATsamd5x::sercomParameters(platformConfig.sercomIndex);
+            const ATsamd5x::SercomClocks params = ATsamd5x::sercomClocks(sercomIndex);
 
             GCLK->PCHCTRL[params.gclkId_CORE].bit.CHEN = 0; // Disable timer
             GCLK->PCHCTRL[params.gclkId_SLOW].bit.CHEN = 0; // Disable timer
@@ -271,7 +276,7 @@ namespace BareCpper
             // GCLK_CRITICAL_SECTION_LEAVE();
 
              //MCLK_CRITICAL_SECTION_ENTER();
-            ATsamd5x::sercomApbEnable(platformConfig.sercomIndex);
+            ATsamd5x::sercomApbEnable(sercomIndex);
             //MCLK_CRITICAL_SECTION_LEAVE();
 
             while (!GCLK->PCHCTRL[params.gclkId_CORE].bit.CHEN
@@ -280,11 +285,9 @@ namespace BareCpper
             return true;
         }
 
-        bool initialiseDevice(const Pins_t& pins, const platformConfig_t& platformConfig)
+        bool initialiseDevice( const uint8_t sercomIndex, const Pins_t& pins)
         {
-            ScopeDebug dbg("spi_Atsamd5x::initialise");
-
-            ::Sercom* sercom = ATsamd5x::sercom(platformConfig.sercomIndex);
+            ::Sercom* sercom = ATsamd5x::sercom(sercomIndex);
             if (!sercom)
                 return false;
             hw_ = &sercom->SPI;
@@ -302,19 +305,15 @@ namespace BareCpper
 
             while (hw_->SYNCBUSY.bit.SWRST); // Wait for reset
 
-            constexpr std::optional<uint8_t> sercomIndex = ATsamd5x::sercomForPins(pins.mosi, pins.miso, pins.sck);
-            static_assert((bool)sercomIndex, "Pin combination {Mosi, Miso, Sck} must map to a valid SERCOM peripheral" );
-            static_assert(sercomIndex == platformConfig.sercomIndex); //< Todo: Deprecate platformConfig.sercomIndex
+            const uint8_t mosiPad = *ATsamd5x::sercomPinPad(sercomIndex, pins.mosi); //<@note We know the result shall be valid derefernece as this is checked via sercomForPins()
+            const uint8_t misoPad = *ATsamd5x::sercomPinPad(sercomIndex, pins.miso);
+            const uint8_t sckPad  = *ATsamd5x::sercomPinPad(sercomIndex, pins.sck);
+            assert((mosiPad == 0) || (mosiPad == 3)); //, MOSI must always be PAd=0 or PAD=3
+            assert((misoPad >= 0) || (misoPad <= 3)); //, MOSI must always be PAd=0 or PAD=3
+            assert(sckPad == 1); //, SCK must always be PAd=1
 
-            const uint8_t mosiPad = *ATsamd5x::sercomPinPad(*sercomIndex, pins.mosi); //<@note We know the result shall be valid derefernece as this is checked via sercomForPins()
-            const uint8_t misoPad = *ATsamd5x::sercomPinPad(*sercomIndex, pins.miso);
-            const uint8_t sckPad  = *ATsamd5x::sercomPinPad(*sercomIndex, pins.sck);
-            static_assert((mosiPad == 0) || (mosiPad == 3)); //, MOSI must always be PAd=0 or PAD=3
-            static_assert((misoPad >= 0) || (misoPad <= 3)); //, MOSI must always be PAd=0 or PAD=3
-            static_assert(sckPad == 1); //, SCK must always be PAd=1
-
-            constexpr uint8_t DIPO = misoPad;
-            constexpr uint8_t DOPO = (mosiPad == 0) ? 0 : 2;
+            const uint8_t DIPO = misoPad;
+            const uint8_t DOPO = (mosiPad == 0) ? 0 : 2;
            
             //SERCOM_CRITICAL_SECTION_ENTER();
             const uint32_t ctrlA = SERCOM_SPI_CTRLA_MODE_SPI_MASTER

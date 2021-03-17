@@ -66,15 +66,12 @@ namespace BareCpper
     {
         gpioDirectionIn(pins.miso);// Set pin direction to input
         gpioPullDisable(pins.miso);
-        gpioFunction(pins.miso, Function::Spi, platformConfig);
 
         gpioOutLow(pins.sck); ///< Initial level
         gpioDirectionOut(pins.sck);// Set pin direction to output
-        gpioFunction(pins.sck, Function::Spi, platformConfig);
 
         gpioOutLow(pins.mosi);
         gpioDirectionOut(pins.mosi); // Set pin direction to output
-        gpioFunction(pins.mosi, Function::Spi, platformConfig);
 
         return true;
     }

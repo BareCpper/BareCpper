@@ -452,23 +452,22 @@ namespace BareCpper {
         gpioPullDisable( pin );
     }
 
-    template<typename Pin_t, typename PlatformOption_t>
-    void gpioFunction(const Pin_t& pin, Function::Spi_t, const PlatformOption_t& platformOptions = {})
+    template<typename Pin_t >
+    void gpioFunction(const Pin_t& pin, const std::optional<ATsamd5x::Peripheral> peripheral )
     {
-        constexpr std::optional<ATsamd5x::Peripheral> peripheral = ATsamd5x::sercomPinPeripheral(platformOptions.sercomIndex, pin);
-        static_assert(peripheral.has_value());
-
         using ::Port; //<Disambiguate Sam.h vs BareCpper::Gpio
 
         PORT->Group[pin.id().port].PINCFG[pin.id().pin].bit.PMUXEN = peripheral.has_value(); //<0xF is maximum valid function
-
-        if (pin.id().pin & 0x1) // Odd numbered pin 
+        if (peripheral.has_value())
         {
-            PORT->Group[pin.id().port].PMUX[pin.id().pin / 2].bit.PMUXO = static_cast<uint8_t>(*peripheral);
-        }
-        else // Even numbered pin
-        {
-            PORT->Group[pin.id().port].PMUX[pin.id().pin / 2].bit.PMUXE = static_cast<uint8_t>(*peripheral);
+            if (pin.id().pin & 0x1) // Odd numbered pin 
+            {
+                PORT->Group[pin.id().port].PMUX[pin.id().pin / 2].bit.PMUXO = static_cast<uint8_t>(*peripheral);
+            }
+            else // Even numbered pin
+            {
+                PORT->Group[pin.id().port].PMUX[pin.id().pin / 2].bit.PMUXE = static_cast<uint8_t>(*peripheral);
+            }
         }
     }
 
