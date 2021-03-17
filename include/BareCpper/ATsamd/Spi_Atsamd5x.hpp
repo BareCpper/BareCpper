@@ -306,14 +306,15 @@ namespace BareCpper
             static_assert((bool)sercomIndex, "Pin combination {Mosi, Miso, Sck} must map to a valid SERCOM peripheral" );
             static_assert(sercomIndex == platformConfig.sercomIndex); //< Todo: Deprecate platformConfig.sercomIndex
 
-            constexpr std::optional<ATsamd5x::SercomPads> pads = ATsamd5x::sercomPadsForPins( pins.mosi, pins.miso, pins.sck );
-            static_assert( (bool)pads);
-            static_assert((pads->mosi == 0) || (pads->mosi == 3)); //, MOSI must always be PAd=0 or PAD=3
-            static_assert((pads->miso >= 0) || (pads->miso <= 3)); //, MOSI must always be PAd=0 or PAD=3
-            static_assert(pads->sck == 1); //, SCK must always be PAd=1
+            const uint8_t mosiPad = *ATsamd5x::sercomPinPad(*sercomIndex, pins.mosi); //<@note We know the result shall be valid derefernece as this is checked via sercomForPins()
+            const uint8_t misoPad = *ATsamd5x::sercomPinPad(*sercomIndex, pins.miso);
+            const uint8_t sckPad  = *ATsamd5x::sercomPinPad(*sercomIndex, pins.sck);
+            static_assert((mosiPad == 0) || (mosiPad == 3)); //, MOSI must always be PAd=0 or PAD=3
+            static_assert((misoPad >= 0) || (misoPad <= 3)); //, MOSI must always be PAd=0 or PAD=3
+            static_assert(sckPad == 1); //, SCK must always be PAd=1
 
-            constexpr uint8_t DIPO = pads->miso;
-            constexpr uint8_t DOPO = (pads->mosi == 0) ? 0 : 2;
+            constexpr uint8_t DIPO = misoPad;
+            constexpr uint8_t DOPO = (mosiPad == 0) ? 0 : 2;
            
             //SERCOM_CRITICAL_SECTION_ENTER();
             const uint32_t ctrlA = SERCOM_SPI_CTRLA_MODE_SPI_MASTER

@@ -52,101 +52,47 @@ namespace ATsamd5x {
         uint8_t sck;
     };
 
-    /** Pins <Mosi, Miso, Sck> */
-    template < typename MosiPin_t, typename MisoPin_t, typename SerialClockPin_t >
-    constexpr std::optional<uint8_t> sercomForPins(const MosiPin_t mosi, const MisoPin_t miso, const SerialClockPin_t sck)
+    /** Finds the first SercomIndex that is common to all provided Pins (Should only ever be one match!)
+    * @note Approach is to find the First SercomIndex candidate and then find subsequenct 2 matches
+    * @warning This approach does not succeed if sercomMux() has dusplication which must eb avoided! */
+    template< typename ... Pins_t>
+    constexpr std::optional<uint8_t> sercomForPins(const Pins_t& ... pins )
     {
-        if (mosi == PA04() && miso == PA06() && sck == PA05()) return 0;
-        if (mosi == PB23() && miso == PB22() && sck == PA17()) return 1;
-        if (mosi == PB11() && miso == PB08() && sck == PB09()) return 4;
+        const size_t pinCount = sizeof...(pins);
+        const PinId ids[pinCount] = { id(pins)... };
+
+        constexpr auto muxes = sercomMux();
+        for ( auto iMux = std::begin(muxes); iMux != std::end(muxes); ++iMux )
+        {
+            size_t i = 0;
+            for (; i < pinCount && iMux->pinId != ids[i]; ++i) {/*nop*/ }
+            if (i == pinCount) continue;//< No match
+
+            uint8_t matchCount = 1;
+            for ( auto iMuxB = iMux+1; iMuxB != std::end(muxes); ++iMuxB)
+            {
+                if (iMuxB->sercomIndex == iMux->sercomIndex)
+                {
+                    size_t j = 0;
+                    for (j = 0; i < pinCount && iMux->pinId != ids[j]; ++i) { /*nop*/}
+                    assert(j != i); //< Does not suppoert duplicates in sercomMu()!!
+                    if ((j < pinCount) && (++matchCount == pinCount))
+                    {
+                        return iMux->sercomIndex;
+                    }
+                }
+            }
+        }
         return std::nullopt; //< Not a valid/known combination so far...
     }
+
     ///@{ Static tests - Common known combinations
-    static_assert(ATsamd5x::sercomForPins(PA04(), PA06(), PA05()) == 0);
-    static_assert(ATsamd5x::sercomForPins(PB23(), PB22(), PA17()) == 1);
-    static_assert(ATsamd5x::sercomForPins(PB11(), PB08(), PB09()) == 4);
+    static_assert(*ATsamd5x::sercomForPins( PA04(), PA06(), PA05() ) == 0);
+    static_assert(*ATsamd5x::sercomForPins( PB23(), PB22(), PA17() ) == 1);
+    static_assert(*ATsamd5x::sercomForPins( PB11(), PB08(), PB09() ) == 4);
     ///@} Static tests
 
-    /** Pins <Mosi, Miso, Sck> */
-    template < typename MosiPin_t, typename MisoPin_t, typename SerialClockPin_t >
-    constexpr std::optional<SercomPads> sercomPadsForPins(const MosiPin_t mosi, const MisoPin_t miso, const SerialClockPin_t sck )
-    {
-        if (mosi == PA04() && miso == PA06() && sck == PA05() ) return SercomPads{ 0, 2, 1 };
-        if (mosi == PB23() && miso == PB22() && sck == PA17() ) return SercomPads{ 3, 2, 1 };
-        if (mosi == PB11() && miso == PB08() && sck == PB09() ) return SercomPads{ 3, 0, 1 };
-        return std::nullopt; //< Not a valid/known combination so far...
-    }
-    ///@{ Static tests - Common known combinations
-    static_assert(ATsamd5x::sercomPadsForPins(PA04(), PA06(), PA05())->mosi == 0 );
-    static_assert(ATsamd5x::sercomPadsForPins(PA04(), PA06(), PA05())->miso == 2);
-    static_assert(ATsamd5x::sercomPadsForPins(PA04(), PA06(), PA05())->sck == 1);
-    static_assert(ATsamd5x::sercomPadsForPins(PB23(), PB22(), PA17())->mosi == 3);
-    static_assert(ATsamd5x::sercomPadsForPins(PB23(), PB22(), PA17())->miso == 2);
-    static_assert(ATsamd5x::sercomPadsForPins(PB23(), PB22(), PA17())->sck == 1);
-    static_assert(ATsamd5x::sercomPadsForPins(PB11(), PB08(), PB09())->mosi == 3);
-    static_assert(ATsamd5x::sercomPadsForPins(PB11(), PB08(), PB09())->miso == 0);
-    static_assert(ATsamd5x::sercomPadsForPins(PB11(), PB08(), PB09())->sck == 1);
-    ///@} Static tests
-
-
-#if 0// @NOTE WIP
-
-    template<size_t SercomIndex>
-    struct Sercom
-    {
-
-        struct IoSets; //< @ std::tuple< Pins<...>, Pins<...> >
-
-        static constexpr size_t ioSetPinMatch(const std::array<PinId, 4>& ioSetPins, const PinId& a, const PinId& b, const PinId& c)
-        {
-            return ioSetPins
-        }
-
-        static constexpr uint8_t ioSetForPins(const PinId& a, const PinId& b, const PinId& c)
-        {
-            { ((std::cout << args << '\n'), ...); }
-
-            std::apply([](auto&&... ioSets)
-                { ((std::cout << args << '\n'), ...); }
-            , IoSets());
-        }
-
-        static constexpr uint8_t padForPin(const PinId& pinId)
-        {
-            std::apply([](auto&&... ioSets)
-                { ((std::cout << args << '\n'), ...); }
-            , IoSets());
-        }
-};
-
-
-    /** @see "6.2.8.1 SERCOM IOSET Configurations"
-    */
-    constexpr uint8_t sercomPadForPin(const uint8_t sercomIndex, const PinId& pinId)
-    {
-#if 0 // @todo Expansion from make_index_sequence instead of Switch case?
-        constexpr uint8_t sercomCount = SERCOM_INST_NUM; //< TODO: put somewhere useful!
-        std::apply([]() {
-            (())
-            }, std::make_index_sequence<sercomCount>());
-#else
-        switch (sercomIndex)
-        {
-        case 0: return Sercom<0>::padForPin(pinId);
-        case 1: return Sercom<1>::padForPin(pinId);
-        case 2: return Sercom<2>::padForPin(pinId);
-        case 3: return Sercom<3>::padForPin(pinId);
-        case 4: return Sercom<4>::padForPin(pinId);
-        case 5: return Sercom<5>::padForPin(pinId);
-        case 6: return Sercom<6>::padForPin(pinId);
-        case 7: return Sercom<7>::padForPin(pinId);
-        default:
-            assert(false);
-            return 0;
-        }
-#endif
-    }
-
+#if 0// @NOTE WIP - Superceeded by sercomForPins() ???
     /// @{ "6.2.8.1 SERCOM IOSET Configurations"
     template<size_t SercomIndex>
     struct Sercom<SercomIndex>::IoSets : std::tuple<>{};

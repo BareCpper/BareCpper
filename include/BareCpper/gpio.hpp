@@ -29,22 +29,6 @@
 namespace BareCpper
 {		
 
-    //struct Functions;
-    struct PinId
-    {
-        uint8_t port;
-        uint8_t pin;
-
-        constexpr bool operator < (const PinId& rhs) const
-        {
-            return std::tie(port, pin) < std::tie(rhs.port, rhs.pin);
-        }
-
-        constexpr bool operator == (const PinId& rhs) const
-        {
-            return std::tie(port, pin) == std::tie(rhs.port, rhs.pin);
-        }
-    };
 
     template< std::size_t PinIndex, typename PinT > struct PinN;
     template< typename PinT > struct PinN<0u, PinT> { typedef PinT Pin0; };
@@ -96,6 +80,34 @@ namespace BareCpper
         template<std::size_t PinIndex> ///< @todo limit Valid port indices to supported range in GCC 'compatible' manner /*, typename = Valid<true>*/
         struct Pin;
     };
+
+    //struct Functions;
+    struct PinId
+    {
+        uint8_t port;
+        uint8_t pin;
+
+        constexpr bool operator < (const PinId& rhs) const  {  return std::tie(port, pin) < std::tie(rhs.port, rhs.pin); }
+        constexpr bool operator == (const PinId& rhs) const  { return std::tie(port, pin) == std::tie(rhs.port, rhs.pin); }
+        constexpr bool operator != (const PinId& rhs) const  { return std::tie(port, pin) != std::tie(rhs.port, rhs.pin); }
+
+        static constexpr PinId makeInvalid()
+        {
+            return { 0xFF, 0xFF };
+        }
+    };
+
+    template<typename Pin_t>
+    constexpr PinId id( const Pin_t& pin = {} )
+    {
+        return pin.id();
+    }
+
+    template<typename Pin_t> 
+    constexpr sub0::if_void<Pin_t> id()
+    {
+        return PinId::makeInvalid();
+    }
 
     /** Helper types to typedef Pin<N> to a different index of PinY
      * @tparam[in] AliasIndex  Index to map pin to i.e. Pin0 where the '0' is the cIndex

@@ -6,6 +6,7 @@
 #endif
 
 #include <cassert>
+#include <array>
 
 #include "Common_ATsamd5x.hpp"
 
@@ -21,13 +22,13 @@ namespace BareCpper {
         static constexpr PortRegister_t mask()
         { return PortRegister_t(1U) << PinIndex; }
 
-        template< typename Pin_t>
+        template<typename Pin_t>
         constexpr bool operator == (const Pin_t& rhs) const
         { return id() == rhs.id(); }
 
-        template< typename Pin_t>
-        constexpr bool operator < (const Pin_t& rhs) const
-        { return id() < rhs.id(); }
+        template<typename Pin_t>
+        constexpr bool operator <(const Pin_t& rhs) const
+        { return id() <rhs.id(); }
     };
   
     template<>
@@ -161,80 +162,224 @@ namespace BareCpper {
     SAM_J_if(using PB01 = PortB::Pin< 1>);
     SAM_G_if(using PB02 = PortB::Pin< 2>);
 
-
-    enum class Peripheral : uint8_t
+    /// Platform specific namespace for helper functions
+    namespace ATsamd5x
     {
-          Off = 0xFF
-        , A = 0x0
-        , B = 0x1
-        , C = 0x2
-        , D = 0x3
-        , E = 0x4
-        , F = 0x5
-        , G = 0x6
-        , H = 0x7
-        , I = 0x8
-        , J = 0x9
-        , K = 0xA
-        , L = 0xB
-        , M = 0xC
-        , N = 0xD
-    };
+        enum class Peripheral : uint8_t
+        {
+              Off = 0xFF
+            , A = 0x0
+            , B = 0x1
+            , C = 0x2
+            , D = 0x3
+            , E = 0x4
+            , F = 0x5
+            , G = 0x6
+            , H = 0x7
+            , I = 0x8
+            , J = 0x9
+            , K = 0xA
+            , L = 0xB
+            , M = 0xC
+            , N = 0xD
+        };
 
-#if 0
-    template<Peripheral id>
-    struct PeripheralMux;
+        struct SercomMux
+        {
+            PinId pinId;
+            Peripheral peripheral;
+            uint8_t sercomIndex;
+            uint8_t sercomPad;
+        };
+        constexpr auto sercomMux()
+        {
+            /// @todo This list is for ALL pins and not just those supported by a G, J, N, or P variant!
+            return std::array{
+                  SercomMux{ id<Port<0>::Pin< 4>>(), Peripheral::D, /*Sercom*/0, /*Pad*/0 } // PA04
+                , SercomMux{ id<Port<2>::Pin<17>>(), Peripheral::D, /*Sercom*/0, /*Pad*/0 } // PC17
+                , SercomMux{ id<Port<0>::Pin< 8>>(), Peripheral::C, /*Sercom*/0, /*Pad*/0 } // PA08
+                , SercomMux{ id<Port<1>::Pin<24>>(), Peripheral::C, /*Sercom*/0, /*Pad*/0 } // PB24
+                , SercomMux{ id<Port<0>::Pin< 5>>(), Peripheral::D, /*Sercom*/0, /*Pad*/1 } // PA05
+                , SercomMux{ id<Port<2>::Pin<16>>(), Peripheral::D, /*Sercom*/0, /*Pad*/1 } // PC16
+                , SercomMux{ id<Port<0>::Pin< 9>>(), Peripheral::C, /*Sercom*/0, /*Pad*/1 } // PA09
+                , SercomMux{ id<Port<1>::Pin<25>>(), Peripheral::C, /*Sercom*/0, /*Pad*/1 } // PB25
+                , SercomMux{ id<Port<0>::Pin< 6>>(), Peripheral::D, /*Sercom*/0, /*Pad*/2 } // PA06
+                , SercomMux{ id<Port<2>::Pin<18>>(), Peripheral::D, /*Sercom*/0, /*Pad*/2 } // PC18
+                , SercomMux{ id<Port<0>::Pin<10>>(), Peripheral::C, /*Sercom*/0, /*Pad*/2 } // PA10
+                , SercomMux{ id<Port<2>::Pin<24>>(), Peripheral::C, /*Sercom*/0, /*Pad*/2 } // PC24
+                , SercomMux{ id<Port<0>::Pin< 7>>(), Peripheral::D, /*Sercom*/0, /*Pad*/3 } // PA07
+                , SercomMux{ id<Port<2>::Pin<19>>(), Peripheral::D, /*Sercom*/0, /*Pad*/3 } // PC19
+                , SercomMux{ id<Port<0>::Pin<11>>(), Peripheral::C, /*Sercom*/0, /*Pad*/3 } // PA11
+                , SercomMux{ id<Port<2>::Pin<25>>(), Peripheral::C, /*Sercom*/0, /*Pad*/3 } // PC25
+                , SercomMux{ id<Port<0>::Pin< 0>>(), Peripheral::D, /*Sercom*/1, /*Pad*/0 } // PA00
+                , SercomMux{ id<Port<0>::Pin<16>>(), Peripheral::C, /*Sercom*/1, /*Pad*/0 } // PA16
+                , SercomMux{ id<Port<2>::Pin<22>>(), Peripheral::C, /*Sercom*/1, /*Pad*/0 } // PC22
+                , SercomMux{ id<Port<2>::Pin<27>>(), Peripheral::C, /*Sercom*/1, /*Pad*/0 } // PC27
+                , SercomMux{ id<Port<0>::Pin< 1>>(), Peripheral::D, /*Sercom*/1, /*Pad*/1 } // PA01
+                , SercomMux{ id<Port<0>::Pin<17>>(), Peripheral::C, /*Sercom*/1, /*Pad*/1 } // PA17
+                , SercomMux{ id<Port<2>::Pin<23>>(), Peripheral::C, /*Sercom*/1, /*Pad*/1 } // PC23
+                , SercomMux{ id<Port<2>::Pin<28>>(), Peripheral::C, /*Sercom*/1, /*Pad*/1 } // PC28
+                , SercomMux{ id<Port<0>::Pin<30>>(), Peripheral::D, /*Sercom*/1, /*Pad*/2 } // PA30
+                , SercomMux{ id<Port<0>::Pin<18>>(), Peripheral::C, /*Sercom*/1, /*Pad*/2 } // PA18
+                , SercomMux{ id<Port<1>::Pin<22>>(), Peripheral::C, /*Sercom*/1, /*Pad*/2 } // PB22
+                , SercomMux{ id<Port<3>::Pin<20>>(), Peripheral::C, /*Sercom*/1, /*Pad*/2 } // PD20
+                , SercomMux{ id<Port<0>::Pin<31>>(), Peripheral::D, /*Sercom*/1, /*Pad*/3 } // PA31
+                , SercomMux{ id<Port<0>::Pin<19>>(), Peripheral::C, /*Sercom*/1, /*Pad*/3 } // PA19
+                , SercomMux{ id<Port<1>::Pin<23>>(), Peripheral::C, /*Sercom*/1, /*Pad*/3 } // PB23
+                , SercomMux{ id<Port<3>::Pin<21>>(), Peripheral::C, /*Sercom*/1, /*Pad*/3 } // PD21
+                , SercomMux{ id<Port<0>::Pin< 9>>(), Peripheral::D, /*Sercom*/2, /*Pad*/0 } // PA09
+                , SercomMux{ id<Port<1>::Pin<25>>(), Peripheral::D, /*Sercom*/2, /*Pad*/0 } // PB25
+                , SercomMux{ id<Port<0>::Pin<12>>(), Peripheral::C, /*Sercom*/2, /*Pad*/0 } // PA12
+                , SercomMux{ id<Port<1>::Pin<26>>(), Peripheral::C, /*Sercom*/2, /*Pad*/0 } // PB26
+                , SercomMux{ id<Port<0>::Pin< 8>>(), Peripheral::D, /*Sercom*/2, /*Pad*/1 } // PA08
+                , SercomMux{ id<Port<1>::Pin<24>>(), Peripheral::D, /*Sercom*/2, /*Pad*/1 } // PB24
+                , SercomMux{ id<Port<0>::Pin<13>>(), Peripheral::C, /*Sercom*/2, /*Pad*/1 } // PA13
+                , SercomMux{ id<Port<1>::Pin<27>>(), Peripheral::C, /*Sercom*/2, /*Pad*/1 } // PB27
+                , SercomMux{ id<Port<0>::Pin<10>>(), Peripheral::D, /*Sercom*/2, /*Pad*/2 } // PA10
+                , SercomMux{ id<Port<2>::Pin<24>>(), Peripheral::D, /*Sercom*/2, /*Pad*/2 } // PC24
+                , SercomMux{ id<Port<1>::Pin<28>>(), Peripheral::C, /*Sercom*/2, /*Pad*/2 } // PB28
+                , SercomMux{ id<Port<0>::Pin<14>>(), Peripheral::C, /*Sercom*/2, /*Pad*/2 } // PA14
+                , SercomMux{ id<Port<0>::Pin<11>>(), Peripheral::D, /*Sercom*/2, /*Pad*/3 } // PA11
+                , SercomMux{ id<Port<2>::Pin<25>>(), Peripheral::D, /*Sercom*/2, /*Pad*/3 } // PC25
+                , SercomMux{ id<Port<1>::Pin<29>>(), Peripheral::C, /*Sercom*/2, /*Pad*/3 } // PB29
+                , SercomMux{ id<Port<0>::Pin<15>>(), Peripheral::C, /*Sercom*/2, /*Pad*/3 } // PA15
+                , SercomMux{ id<Port<0>::Pin<17>>(), Peripheral::D, /*Sercom*/3, /*Pad*/0 } // PA17
+                , SercomMux{ id<Port<2>::Pin<23>>(), Peripheral::D, /*Sercom*/3, /*Pad*/0 } // PC23
+                , SercomMux{ id<Port<0>::Pin<22>>(), Peripheral::C, /*Sercom*/3, /*Pad*/0 } // PA22
+                , SercomMux{ id<Port<1>::Pin<20>>(), Peripheral::C, /*Sercom*/3, /*Pad*/0 } // PB20
+                , SercomMux{ id<Port<0>::Pin<16>>(), Peripheral::D, /*Sercom*/3, /*Pad*/1 } // PA16
+                , SercomMux{ id<Port<2>::Pin<22>>(), Peripheral::D, /*Sercom*/3, /*Pad*/1 } // PC22
+                , SercomMux{ id<Port<0>::Pin<23>>(), Peripheral::C, /*Sercom*/3, /*Pad*/1 } // PA23
+                , SercomMux{ id<Port<1>::Pin<21>>(), Peripheral::C, /*Sercom*/3, /*Pad*/1 } // PB21
+                , SercomMux{ id<Port<0>::Pin<18>>(), Peripheral::D, /*Sercom*/3, /*Pad*/2 } // PA18
+                , SercomMux{ id<Port<0>::Pin<20>>(), Peripheral::D, /*Sercom*/3, /*Pad*/2 } // PA20
+                , SercomMux{ id<Port<3>::Pin<20>>(), Peripheral::D, /*Sercom*/3, /*Pad*/2 } // PD20
+                , SercomMux{ id<Port<0>::Pin<24>>(), Peripheral::C, /*Sercom*/3, /*Pad*/2 } // PA24
+                , SercomMux{ id<Port<0>::Pin<19>>(), Peripheral::D, /*Sercom*/3, /*Pad*/3 } // PA19
+                , SercomMux{ id<Port<0>::Pin<21>>(), Peripheral::D, /*Sercom*/3, /*Pad*/3 } // PA21
+                , SercomMux{ id<Port<3>::Pin<21>>(), Peripheral::D, /*Sercom*/3, /*Pad*/3 } // PD21
+                , SercomMux{ id<Port<0>::Pin<25>>(), Peripheral::C, /*Sercom*/3, /*Pad*/3 } // PA25
+                , SercomMux{ id<Port<0>::Pin<13>>(), Peripheral::D, /*Sercom*/4, /*Pad*/0 } // PA13
+                , SercomMux{ id<Port<1>::Pin< 8>>(), Peripheral::D, /*Sercom*/4, /*Pad*/0 } // PB08
+                , SercomMux{ id<Port<1>::Pin<27>>(), Peripheral::D, /*Sercom*/4, /*Pad*/0 } // PB27
+                , SercomMux{ id<Port<1>::Pin<12>>(), Peripheral::C, /*Sercom*/4, /*Pad*/0 } // PB12
+                , SercomMux{ id<Port<0>::Pin<12>>(), Peripheral::D, /*Sercom*/4, /*Pad*/1 } // PA12
+                , SercomMux{ id<Port<1>::Pin< 9>>(), Peripheral::D, /*Sercom*/4, /*Pad*/1 } // PB09
+                , SercomMux{ id<Port<1>::Pin<26>>(), Peripheral::D, /*Sercom*/4, /*Pad*/1 } // PB26
+                , SercomMux{ id<Port<1>::Pin<13>>(), Peripheral::C, /*Sercom*/4, /*Pad*/1 } // PB13
+                , SercomMux{ id<Port<0>::Pin<14>>(), Peripheral::D, /*Sercom*/4, /*Pad*/2 } // PA14
+                , SercomMux{ id<Port<1>::Pin<10>>(), Peripheral::D, /*Sercom*/4, /*Pad*/2 } // PB10
+                , SercomMux{ id<Port<1>::Pin<28>>(), Peripheral::D, /*Sercom*/4, /*Pad*/2 } // PB28
+                , SercomMux{ id<Port<1>::Pin<14>>(), Peripheral::C, /*Sercom*/4, /*Pad*/2 } // PB14
+                , SercomMux{ id<Port<1>::Pin<11>>(), Peripheral::D, /*Sercom*/4, /*Pad*/3 } // PB11
+                , SercomMux{ id<Port<1>::Pin<29>>(), Peripheral::D, /*Sercom*/4, /*Pad*/3 } // PB29
+                , SercomMux{ id<Port<0>::Pin<15>>(), Peripheral::D, /*Sercom*/4, /*Pad*/3 } // PA15
+                , SercomMux{ id<Port<1>::Pin<15>>(), Peripheral::C, /*Sercom*/4, /*Pad*/3 } // PB15
+                , SercomMux{ id<Port<0>::Pin<23>>(), Peripheral::D, /*Sercom*/5, /*Pad*/0 } // PA23
+                , SercomMux{ id<Port<1>::Pin< 2>>(), Peripheral::D, /*Sercom*/5, /*Pad*/0 } // PB02
+                , SercomMux{ id<Port<1>::Pin<31>>(), Peripheral::D, /*Sercom*/5, /*Pad*/0 } // PB31
+                , SercomMux{ id<Port<1>::Pin<16>>(), Peripheral::C, /*Sercom*/5, /*Pad*/0 } // PB16
+                , SercomMux{ id<Port<0>::Pin<22>>(), Peripheral::D, /*Sercom*/5, /*Pad*/1 } // PA22
+                , SercomMux{ id<Port<1>::Pin< 3>>(), Peripheral::D, /*Sercom*/5, /*Pad*/1 } // PB03
+                , SercomMux{ id<Port<1>::Pin<30>>(), Peripheral::D, /*Sercom*/5, /*Pad*/1 } // PB30
+                , SercomMux{ id<Port<1>::Pin<17>>(), Peripheral::C, /*Sercom*/5, /*Pad*/1 } // PB17
+                , SercomMux{ id<Port<0>::Pin<24>>(), Peripheral::D, /*Sercom*/5, /*Pad*/2 } // PA24
+                , SercomMux{ id<Port<1>::Pin< 0>>(), Peripheral::D, /*Sercom*/5, /*Pad*/2 } // PB00
+                , SercomMux{ id<Port<1>::Pin<22>>(), Peripheral::D, /*Sercom*/5, /*Pad*/2 } // PB22
+                , SercomMux{ id<Port<0>::Pin<20>>(), Peripheral::C, /*Sercom*/5, /*Pad*/2 } // PA20
+                , SercomMux{ id<Port<1>::Pin<18>>(), Peripheral::C, /*Sercom*/5, /*Pad*/2 } // PB18
+                , SercomMux{ id<Port<0>::Pin<25>>(), Peripheral::D, /*Sercom*/5, /*Pad*/3 } // PA25
+                , SercomMux{ id<Port<1>::Pin< 1>>(), Peripheral::D, /*Sercom*/5, /*Pad*/3 } // PB01
+                , SercomMux{ id<Port<1>::Pin<23>>(), Peripheral::D, /*Sercom*/5, /*Pad*/3 } // PB23
+                , SercomMux{ id<Port<0>::Pin<21>>(), Peripheral::C, /*Sercom*/5, /*Pad*/3 } // PA21
+                , SercomMux{ id<Port<1>::Pin<19>>(), Peripheral::C, /*Sercom*/5, /*Pad*/3 } // PB19
+                , SercomMux{ id<Port<3>::Pin< 9>>(), Peripheral::D, /*Sercom*/6, /*Pad*/0 } // PD09
+                , SercomMux{ id<Port<2>::Pin<13>>(), Peripheral::D, /*Sercom*/6, /*Pad*/0 } // PC13
+                , SercomMux{ id<Port<2>::Pin< 4>>(), Peripheral::C, /*Sercom*/6, /*Pad*/0 } // PC04
+                , SercomMux{ id<Port<2>::Pin<16>>(), Peripheral::C, /*Sercom*/6, /*Pad*/0 } // PC16
+                , SercomMux{ id<Port<3>::Pin< 8>>(), Peripheral::D, /*Sercom*/6, /*Pad*/1 } // PD08
+                , SercomMux{ id<Port<2>::Pin<12>>(), Peripheral::D, /*Sercom*/6, /*Pad*/1 } // PC12
+                , SercomMux{ id<Port<2>::Pin< 5>>(), Peripheral::C, /*Sercom*/6, /*Pad*/1 } // PC05
+                , SercomMux{ id<Port<2>::Pin<17>>(), Peripheral::C, /*Sercom*/6, /*Pad*/1 } // PC17
+                , SercomMux{ id<Port<2>::Pin<14>>(), Peripheral::D, /*Sercom*/6, /*Pad*/2 } // PC14
+                , SercomMux{ id<Port<3>::Pin<10>>(), Peripheral::D, /*Sercom*/6, /*Pad*/2 } // PD10
+                , SercomMux{ id<Port<2>::Pin< 6>>(), Peripheral::C, /*Sercom*/6, /*Pad*/2 } // PC06
+                , SercomMux{ id<Port<2>::Pin<10>>(), Peripheral::C, /*Sercom*/6, /*Pad*/2 } // PC10
+                , SercomMux{ id<Port<2>::Pin<18>>(), Peripheral::C, /*Sercom*/6, /*Pad*/2 } // PC18
+                , SercomMux{ id<Port<2>::Pin<15>>(), Peripheral::D, /*Sercom*/6, /*Pad*/3 } // PC15
+                , SercomMux{ id<Port<3>::Pin<11>>(), Peripheral::D, /*Sercom*/6, /*Pad*/3 } // PD11
+                , SercomMux{ id<Port<2>::Pin< 7>>(), Peripheral::C, /*Sercom*/6, /*Pad*/3 } // PC07
+                , SercomMux{ id<Port<2>::Pin<11>>(), Peripheral::C, /*Sercom*/6, /*Pad*/3 } // PC11
+                , SercomMux{ id<Port<2>::Pin<19>>(), Peripheral::C, /*Sercom*/6, /*Pad*/3 } // PC19
+                , SercomMux{ id<Port<1>::Pin<21>>(), Peripheral::D, /*Sercom*/7, /*Pad*/0 } // PB21
+                , SercomMux{ id<Port<3>::Pin< 8>>(), Peripheral::C, /*Sercom*/7, /*Pad*/0 } // PD08
+                , SercomMux{ id<Port<1>::Pin<30>>(), Peripheral::C, /*Sercom*/7, /*Pad*/0 } // PB30
+                , SercomMux{ id<Port<2>::Pin<12>>(), Peripheral::C, /*Sercom*/7, /*Pad*/0 } // PC12
+                , SercomMux{ id<Port<1>::Pin<20>>(), Peripheral::D, /*Sercom*/7, /*Pad*/1 } // PB20
+                , SercomMux{ id<Port<3>::Pin< 9>>(), Peripheral::C, /*Sercom*/7, /*Pad*/1 } // PD09
+                , SercomMux{ id<Port<1>::Pin<31>>(), Peripheral::C, /*Sercom*/7, /*Pad*/1 } // PB31
+                , SercomMux{ id<Port<2>::Pin<13>>(), Peripheral::C, /*Sercom*/7, /*Pad*/1 } // PC13
+                , SercomMux{ id<Port<1>::Pin<18>>(), Peripheral::D, /*Sercom*/7, /*Pad*/2 } // PB18
+                , SercomMux{ id<Port<2>::Pin<10>>(), Peripheral::D, /*Sercom*/7, /*Pad*/2 } // PC10
+                , SercomMux{ id<Port<2>::Pin<14>>(), Peripheral::C, /*Sercom*/7, /*Pad*/2 } // PC14
+                , SercomMux{ id<Port<3>::Pin<10>>(), Peripheral::C, /*Sercom*/7, /*Pad*/2 } // PD10
+                , SercomMux{ id<Port<0>::Pin<30>>(), Peripheral::C, /*Sercom*/7, /*Pad*/2 } // PA30
+                , SercomMux{ id<Port<1>::Pin<19>>(), Peripheral::D, /*Sercom*/7, /*Pad*/3 } // PB19
+                , SercomMux{ id<Port<2>::Pin<11>>(), Peripheral::D, /*Sercom*/7, /*Pad*/3 } // PC11
+                , SercomMux{ id<Port<2>::Pin<15>>(), Peripheral::C, /*Sercom*/7, /*Pad*/3 } // PC15
+                , SercomMux{ id<Port<3>::Pin<11>>(), Peripheral::C, /*Sercom*/7, /*Pad*/3 } // PD11
+                , SercomMux{ id<Port<0>::Pin<31>>(), Peripheral::C, /*Sercom*/7, /*Pad*/3 } // PA31
+            };
+        }
 
-    template<>
-    struct PeripheralMux<C>
-    {
-        using Pins_t = Pins<PC04,PC05,PC06,PC07,PA08,PA09 
-    };
-#endif
+        template<typename Pin_t>
+        constexpr std::optional<Peripheral> sercomPinPeripheral(const uint8_t sercomIndex, const Pin_t& pin = {})
+        {
+            for (const auto mux : sercomMux())
+            {
+                if (mux.sercomIndex == sercomIndex && mux.pinId == id(pin))
+                    return mux.peripheral;
+            }
 
-#if 0
-    /** @{ Analog pins  */
-    using PinA0 = Pin2;
-    using PinA1 = Pin3;
-    using PinA2 = Pin4;
-    using PinA3 = Pin5;
-    using PinA4 = Pin28;
-    using PinA5 = Pin29;
-    using PinA6 = Pin30;
-    using PinA7 = Pin31;
-    /** @} */
+            return std::nullopt;
+        }
+        ///@{ Static tests of common known values
+        static_assert(*sercomPinPeripheral<PA06>(0) == Peripheral::D);
+        static_assert(*sercomPinPeripheral<PA04>(0) == Peripheral::D);
+        static_assert(*sercomPinPeripheral<PA05>(0) == Peripheral::D);
+        static_assert(*sercomPinPeripheral<PB22>(1) == Peripheral::C);
+        static_assert(*sercomPinPeripheral<PB23>(1) == Peripheral::C);
+        static_assert(*sercomPinPeripheral<PA17>(1) == Peripheral::C);
+        static_assert(*sercomPinPeripheral<PB08>(4) == Peripheral::D);
+        static_assert(*sercomPinPeripheral<PB11>(4) == Peripheral::D);
+        static_assert(*sercomPinPeripheral<PB09>(4) == Peripheral::D);
+        ///@} Static tests of common known values
+
+        template<typename Pin_t>
+        constexpr std::optional<uint8_t> sercomPinPad(const uint8_t sercomIndex, const Pin_t& pin = {})
+        {
+            for (const auto mux : sercomMux())
+            {
+                if (mux.sercomIndex == sercomIndex && mux.pinId == id(pin))
+                    return mux.sercomPad;
+            }
+
+            return std::nullopt;
+        }
+        ///@{ Static tests - Common known combinations
+        static_assert(*sercomPinPad(0, PA04()) == 0);
+        static_assert(*sercomPinPad(0, PA06()) == 2);
+        static_assert(*sercomPinPad(0, PA05()) == 1);
+        static_assert(*sercomPinPad(1, PB23()) == 3);
+        static_assert(*sercomPinPad(1, PB22()) == 2);
+        static_assert(*sercomPinPad(1, PA17()) == 1);
+        static_assert(*sercomPinPad(4, PB11()) == 3);
+        static_assert(*sercomPinPad(4, PB08()) == 0);
+        static_assert(*sercomPinPad(4, PB09()) == 1);
+        ///@} Static tests
 
 
-    /** @{ Other pins */
-    //TODO
-    /** @} */
-
-#endif
-
-#if 0
-    template<> template<>
-    struct PortPins<0>::Pin< >
-    {
-        static const std::size_t foo = 222;
-    };
-
-    template<> template<>
-    struct PortPins<0>::Pin<2>
-    {
-        static const std::size_t foo = 333;
-    };
-#endif
-
-
-    /** Hardware Uart 0 **/
-    //class UartRx0 : public Port::D::Pin0 {};
-    //class UartTx0 : public Port::D::Pin1 {};
-
-    /** Hardware SPI 0 **/
-    //class SpiMosi0 : public Port::B::Pin3 {};
-    //class SpiMiso0 : public Port::B::Pin4 {}; //< SPI Master-In Slave-Out
-    //class SpiSck0 : public Port::B::Pin5 {};
-
+    } // END ATsamd5x
 
     template<typename Pin_t>
     void gpioEnableInput( const Pin_t& pin )
@@ -307,59 +452,25 @@ namespace BareCpper {
         gpioPullDisable( pin );
     }
 
-    template<typename Pin_t>
-    constexpr Peripheral spiPinPeripheral(const Pin_t& pin, const uint8_t sercomIndex)
-    {
-        assert(sercomIndex == 1 || sercomIndex == 0 || sercomIndex == 4 ); //< 'todo A proper impl!
-
-        switch (sercomIndex)
-        {
-        case 0:
-            return std::is_same_v<Pin_t, PA06> ? Peripheral::D :
-                   std::is_same_v<Pin_t, PA04> ? Peripheral::D :
-                   std::is_same_v<Pin_t, PA05> ? Peripheral::D :
-                                                 Peripheral::Off;
-        case 1:
-            return std::is_same_v<Pin_t, PB22> ? Peripheral::C :
-                   std::is_same_v<Pin_t, PB23> ? Peripheral::C :
-                   std::is_same_v<Pin_t, PA17> ? Peripheral::C :
-                                                 Peripheral::Off;
-        case 4:
-            return std::is_same_v<Pin_t, PB08> ? Peripheral::D :
-                   std::is_same_v<Pin_t, PB11> ? Peripheral::D :
-                   std::is_same_v<Pin_t, PB09> ? Peripheral::D :
-                   Peripheral::Off;
-        default: 
-            return Peripheral::Off;
-        }
-
-    }
-
     template<typename Pin_t, typename PlatformOption_t>
     void gpioFunction(const Pin_t& pin, Function::Spi_t, const PlatformOption_t& platformOptions = {})
     {
-        constexpr Peripheral peripheral = spiPinPeripheral(pin, platformOptions.sercomIndex);
-        static_assert(peripheral != Peripheral::Off);
+        constexpr std::optional<ATsamd5x::Peripheral> peripheral = ATsamd5x::sercomPinPeripheral(platformOptions.sercomIndex, pin);
+        static_assert(peripheral.has_value());
 
-        using ::Port; //< Disambiguate Sam.h vs BareCpper::Gpio
+        using ::Port; //<Disambiguate Sam.h vs BareCpper::Gpio
 
-        PORT->Group[pin.id().port].PINCFG[pin.id().pin].bit.PMUXEN = (peripheral != Peripheral::Off); //< 0xF is maximum valid function
+        PORT->Group[pin.id().port].PINCFG[pin.id().pin].bit.PMUXEN = peripheral.has_value(); //<0xF is maximum valid function
 
         if (pin.id().pin & 0x1) // Odd numbered pin 
         {
-            PORT->Group[pin.id().port].PMUX[pin.id().pin / 2].bit.PMUXO = static_cast<uint8_t>(peripheral);
+            PORT->Group[pin.id().port].PMUX[pin.id().pin / 2].bit.PMUXO = static_cast<uint8_t>(*peripheral);
         }
         else // Even numbered pin
         {
-            PORT->Group[pin.id().port].PMUX[pin.id().pin / 2].bit.PMUXE = static_cast<uint8_t>(peripheral);
+            PORT->Group[pin.id().port].PMUX[pin.id().pin / 2].bit.PMUXE = static_cast<uint8_t>(*peripheral);
         }
     }
-
-
-    //using Imu_Miso = BareCpper::PB22; //< PIN_SPI_MISO         (23u)
-   // using Imu_Mosi = BareCpper::PB23; //< PIN_SPI_MOSI         (24u)
-    //using Imu_Sck = BareCpper::PA17; //< PIN_SPI_SCK          (25u)
-    //using Imu_ChipSelect = BareCpper::PA22; //< IMU_CS    12
 
 } //END: BareCopper
 
