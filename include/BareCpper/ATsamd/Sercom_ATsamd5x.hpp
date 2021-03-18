@@ -65,7 +65,7 @@ namespace ATsamd5x {
                 {
                     size_t j = 0;
                     for (j = 0; i < pinCount && iMux->pinId != ids[j]; ++i) { /*nop*/}
-                    assert(j != i); //< Does not suppoert duplicates in sercomMu()!!
+                   // assert(j != i); //< Does not suppoert duplicates in sercomMu()!!
                     if ((j < pinCount) && (++matchCount == pinCount))
                     {
                         return iMux->sercomIndex;
