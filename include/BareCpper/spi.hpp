@@ -92,7 +92,7 @@ namespace BareCpper
     */
     struct SpiRuntimeConfig
     {
-        int/** TODO: Runtime pin addressing */ chipSelect;
+        BareCpper::PinId chipSelect;/** TODO: Runtime pin addressing */ 
         const size_t baudRate = SpiDefaultBaudRate;
         const SpiMode mode;
         const SpiBitOrder bitOrder;
