@@ -1,12 +1,16 @@
 #ifndef BARECPPER_SERCOM_ATSAM5X_H_
 #define BARECPPER_SERCOM_ATSAM5X_H_
 
+#if !__SAMD51__
+#  error "SAMD library error, please check and update accordingly."
+#endif
+#include "sam.h"
+
 #include <cassert>
 #include <array>
 #include <optional>
 
 #include "Common_ATsamd5x.hpp"
-#include "sercom.h" //< @note From Samd51 CMSIS
 
 namespace BareCpper {
 namespace ATsamd5x {
