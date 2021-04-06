@@ -49,18 +49,23 @@ namespace ATsamd5x {
         return { (uint8_t)gclkId_COREs[sercomIndex], (uint8_t)gclkId_SLOWs[sercomIndex] };
     }
 
+   // using PadPrecondition_t = bool(const uint8_t padIndex);
+    typedef bool (*PadPrecondition_t)(const uint8_t padIndex);
+
     /** Finds the first SercomIndex that is common to all provided Pins (Should only ever be one match!)
     * @note Approach is to find the First SercomIndex candidate and then find subsequenct 2 matches
     * @warning This approach does not succeed if sercomMux() has dusplication which must eb avoided! */
     template< size_t pinCount>
-    constexpr std::optional<uint8_t> sercomForPins(const PinId(&ids)[pinCount] )
+    constexpr std::optional<uint8_t> sercomForPins(const PinId(&ids)[pinCount], const std::array<PadPrecondition_t, pinCount>& padPreconditions = {} )
     {
         constexpr auto muxes = sercomMux();
         for ( auto iMux = std::begin(muxes); iMux != std::end(muxes); ++iMux )
         {
             size_t i = 0;
-            for (; i < pinCount && iMux->pinId != ids[i]; ++i) {/*nop*/ }
+            for (; (i < pinCount) && (iMux->pinId != ids[i]); ++i) {/*nop*/ }
             if (i == pinCount) continue;//< No match
+            if (padPreconditions[i] && !(padPreconditions[i])(iMux->sercomPad))
+                continue; //< rejected via precondition e.g. SCK must be on Pad==0 etc
 
             uint8_t matchCount = 1;
             for ( auto iMuxB = iMux+1; iMuxB != std::end(muxes); ++iMuxB)
@@ -68,9 +73,13 @@ namespace ATsamd5x {
                 if (iMuxB->sercomIndex == iMux->sercomIndex)
                 {
                     size_t j = 0;
-                    for (j = 0; i < pinCount && iMux->pinId != ids[j]; ++i) { /*nop*/}
-                   // assert(j != i); //< Does not suppoert duplicates in sercomMu()!!
-                    if ((j < pinCount) && (++matchCount == pinCount))
+                    for (j = 0; j < pinCount && iMuxB->pinId != ids[j]; ++j) { /*nop*/}
+
+                    if (j == pinCount) continue; //< No match
+                    if (padPreconditions[j] && !(padPreconditions[j])(iMuxB->sercomPad))
+                        continue; //< rejected via precondition e.g. SCK must be on Pad==0 etc
+
+                    if ( ++matchCount == pinCount )
                     {
                         return iMux->sercomIndex;
                     }
@@ -84,6 +93,8 @@ namespace ATsamd5x {
     static_assert(*ATsamd5x::sercomForPins({ id<PA04>(), id<PA06>(),  id<PA05>() } ) == 0);
     static_assert(*ATsamd5x::sercomForPins({ id<PB23>(), id<PB22>(),  id<PA17>() } ) == 1);
     static_assert(*ATsamd5x::sercomForPins({ id<PB11>(), id<PB08>(),  id<PB09>() } ) == 4);
+    static_assert(*ATsamd5x::sercomForPins({ id<PA20>(), id<PA23>(),  id<PA22>() }) == 3);
+    static_assert(*ATsamd5x::sercomForPins({ id<PA20>(), id<PA23>(),  id<PA22>() }, { nullptr, nullptr, [](const uint8_t pad) { return pad == 1; } }) == 5);
     ///@} Static tests
 
 #if 0// @NOTE WIP - Superceeded by sercomForPins() ???
