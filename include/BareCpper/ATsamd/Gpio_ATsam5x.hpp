@@ -376,17 +376,23 @@ namespace BareCpper {
         static_assert(*sercomPinPeripheral<PB09>(4) == Peripheral::D);
         ///@} Static tests of common known values
 
-        template<typename Pin_t>
-        constexpr std::optional<uint8_t> sercomPinPad(const uint8_t sercomIndex, const Pin_t& pin = {})
+        constexpr std::optional<uint8_t> sercomPinPad(const uint8_t sercomIndex, const PinId pinId)
         {
             for (const auto mux : sercomMux())
             {
-                if (mux.sercomIndex == sercomIndex && mux.pinId == id(pin))
+                if (mux.sercomIndex == sercomIndex && mux.pinId == pinId)
                     return mux.sercomPad;
             }
 
             return std::nullopt;
         }
+
+        template<typename Pin_t>
+        constexpr std::optional<uint8_t> sercomPinPad(const uint8_t sercomIndex, const Pin_t& pin = {})
+        {
+            return sercomPinPad(sercomIndex, id(pin));
+        }
+
         ///@{ Static tests - Common known combinations
         static_assert(*sercomPinPad(0, PA04()) == 0);
         static_assert(*sercomPinPad(0, PA06()) == 2);
