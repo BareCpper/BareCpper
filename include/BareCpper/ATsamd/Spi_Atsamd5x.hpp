@@ -251,9 +251,15 @@ namespace BareCpper
             const uint8_t mosiPad = *ATsamd5x::sercomPinPad(sercomIndex, pins.mosi); //<@note We know the result shall be valid derefernece as this is checked via sercomForPins()
             const uint8_t misoPad = *ATsamd5x::sercomPinPad(sercomIndex, pins.miso);
             const uint8_t sckPad  = *ATsamd5x::sercomPinPad(sercomIndex, pins.sck);
-            assert((mosiPad == 0) || (mosiPad == 3)); //, MOSI must always be PAd=0 or PAD=3
-            assert((misoPad >= 0) || (misoPad <= 3)); //, MOSI must always be PAd=0 or PAD=3
-            assert(sckPad == 1); //, SCK must always be PAd=1
+
+            const bool mosiValid = ((mosiPad == 0) || (mosiPad == 3)); // MOSI must always be PAD== 0 or 3
+            const bool misoValid = ((misoPad >= 0) || (misoPad <= 3)); // MISO can be on any PAD
+            const bool sckValid = (sckPad == 1); // SCK must always be PAD==1
+
+            if (!(mosiValid && misoValid && sckValid))
+            {
+                return false;
+            }
 
             const uint8_t DIPO = misoPad;
             const uint8_t DOPO = (mosiPad == 0) ? 0 : 2;
