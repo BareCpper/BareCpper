@@ -4,15 +4,21 @@
 #  error "Include <BareCpper/CycleCounter.h> instead of this file."
 #endif
 
+#ifndef CORE_FREQUENCY
 #ifndef F_CPU
-# error "Macro F_CPU must be defined"
+# error "Macro F_CPU or CORE_FREQUENCY must be defined"
+#else
+#define CORE_FREQUENCY F_CPU
+#endif
+#else
+
 #endif
 
 namespace BareCpper
 {
     inline constexpr uint32_t CycleCounter::usToTicks(const uint16_t timeUs)
     {
-        return timeUs * (F_CPU / 1000000);
+        return timeUs * (CORE_FREQUENCY / 1000000);
     }
     
     inline CycleCounter::CycleCounter()
