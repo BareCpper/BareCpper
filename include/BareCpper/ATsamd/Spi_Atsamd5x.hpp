@@ -133,8 +133,6 @@ namespace BareCpper
             size_t iRxBuffer = 0;
             size_t iTxBuffer = 0;
 
-            int32_t retVal = 0;
-
             SERCOM_SPI_INTFLAG_Type iFlag; //, Store volatile per iteration to save re-reading for each flag
             for (iFlag.reg = hw_->INTFLAG.reg; !iFlag.bit.ERROR && (iRxBuffer < message.bufferLength); iFlag.reg = hw_->INTFLAG.reg )
             {

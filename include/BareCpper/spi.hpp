@@ -102,7 +102,7 @@ namespace BareCpper
     {
         const uint8_t* txBuffer; ///<  Pointer to the output data buffer
         uint8_t* rxBuffer; ///< Pointer to the input data buffer 
-        int16_t bufferLength; ///< Size of the message data in SPI characters
+        uint16_t bufferLength; ///< Size ofbo the txBuffer and/or rxBuffer buffers where provided
     };
 
     /** CRTP Platform specific base
