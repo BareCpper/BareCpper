@@ -17,18 +17,16 @@
 #define swi_disable_interrupts __disable_irq //disable interrupts
 
 //define Reset and Discovery Timing
-#define tDSCHG				200/*000ns*/												//min spec = 150us
-#define tRESET				500/*000nsn*/												//min spec = 480us (STD Speed)
-#define tRRT				10/*000ns*/												//min spec = 8us
-#define tDRR				1/*000ns*/												//min spec = 1us; max spec = 2us
-#define tMSDR				2/*000ns*/												//min spec = 2us; max spec = 6us
-#define tHTSS				200/*000ns*/												//min spec = 150us
+#define tDSCHG				200 //Reset Low Time, Device in Inactive State: min spec = 150us
+#define tRESET				500 //Discharge Low Time, Device in Active Write Cycle(tWR): min spec = 480us (STD Speed), 48us (High Speed)
+#define tRRT				10 //Reset Recovery Time: min spec = 8us
+#define tDRR				1 //Discovery Response Request: min spec = 1us; max spec = 2us - t_PUP
+#define tDACK_MIN			8 //Discovery Response Acknowledge Time: min spec = 8us; max spec = 24
+#define tDACK_MAX			24 // ''    ''
+#define tMSDR_MIN			3 //Master Strobe Discovery Response Time: min spec = 2us; max spec = 6us
+#define tMSDR_MAX			6 // '' ''
+#define tHTSS				200 //min spec = 150us
 
-#define tDACK_DLY			delayUs(8/*000ns*/)
-#define tRRT_DLY			delayUs(tRRT)
-#define tDRR_DLY			delayUs(tDRR)
-#define tMSDR_DLY			delayUs(tMSDR) //< unused
-#define tDSCHG_DLY			delayUs(tDSCHG)
 #define tDRESET_DLY			delayUs(tRESET) ///< Unused
 #define tHTSS_DLY           delayUs(tHTSS)
 
@@ -401,15 +399,57 @@ namespace BareCpper
 
 	inline bool Swi::device_discovery()
 	{
+		static CycleCounter timer;
+
 		drive_si_low( iPort_, iPin_ ); //drive SI/O pin low
-		tDSCHG_DLY; //discharge low time delay
+		delay(timer, timer.usToTicks(tDSCHG) ); //discharge low time delay
+
 		release_si( iPort_, iPin_ ); //release SI/O pin and set as input;
-		tRRT_DLY; //reset recovery time delay
+		delay(timer, timer.usToTicks(tRRT)); //reset recovery time delay
+
+		/** @see "3.1.1.2 Device Response Upon Reset or Power-Up" 
+		* The Discovery Response Acknowledge sequence begins by the master driving the SI/O line low which
+		* will start the AT21CS01/11 internal timing circuits. The master must continue to drive the line low for tDRR.
+		*/
 		drive_si_low( iPort_, iPin_ ); //drive SI/O pin low
-		tDRR_DLY; //discovery response request time delay
+		const auto tDrrStart = timer.count();
+		continueAt(timer, tDrrStart + timer.usToTicks(tDRR) ); //discovery response request time delay
 		release_si( iPort_, iPin_ ); //release SI/O pin and set as input
-		tDACK_DLY; //master strobe
-		return (readIn( iPort_, iPin_ )); //return value of SI/O
+
+		/** @see "3.1.1.2 Device Response Upon Reset or Power-Up" 
+		* The master should sample the state of the SI/O line at
+		* tMSDR past the initiation of tDRR.
+		*/
+		const auto tMsdrMinTime = tDrrStart + timer.usToTicks(tMSDR_MIN);
+		const auto tMsdrMaxTime = tDrrStart + timer.usToTicks(tMSDR_MAX);
+		continueAt(timer, tMsdrMinTime); // tMSDR past the initiation of tDRR.
+		bool isDiscovered;
+		while ( !(isDiscovered = readIn(iPort_, iPin_))
+			&& (timer.count() < tMsdrMaxTime))
+		{
+			__NOP(); ///< @todo NOP or not-to NOP
+		}
+
+		// @todo If Slave hasn't responded wihtin MSDR window, it is not clear if it would be better to accept response upoto tDACK_MAX?
+		if (!isDiscovered)
+			return false;
+
+		/** @see "3.1.1.2 Device Response Upon Reset or Power-Up" 
+		* During the tDRR time, the AT21CS01/11 will respond by concurrently driving SI/O low. The device will
+		* continue to drive SI/O low for a total time of tDACK */
+		const auto tDackMinTime = tDrrStart + timer.usToTicks(tDACK_MIN);
+		const auto tDackMaxTime = tDrrStart + timer.usToTicks(tDACK_MAX);
+		continueAt(timer, tDackMinTime); // After the tDACK time has elapsed, the AT21CS01 / 11 will release SI / O
+		bool isHolding;
+		while ( (isHolding = readIn(iPort_, iPin_))
+			&& (timer.count() < tDackMaxTime))
+		{
+			__NOP(); ///< @todo NOP or not-to NOP
+		}
+		const bool isReleased = !isHolding;
+
+		//Device should have released line within time of tDACK_MAX
+		return isReleased;
 	}
 
 	inline void Swi::start_stop_cond()
