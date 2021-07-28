@@ -6,19 +6,32 @@
 
 namespace BareCpper
 {
+
+    /** Wait for a duration of timer.count()
+    * @todo Setup a time event ... __WFI()
+    * @note ALWAYS_INLINE
+    */
+    template<typename Timer >
+    __attribute__((always_inline)) static inline void continueAt(Timer& timer, const uint32_t tickEnd)
+    {
+        while (timer.count() < tickEnd) 
+        {
+#if 0
+            __NOP(); ///< @todo NOP or not-to NOP
+#endif
+        };
+    }
+
     /** Wait for a duration of time
      * @param[in]  tickTimer  Timer used to measure ticks e.g. CycleCounter, MsTimer etc
      * @param[in]  timerTickCount  Delay between consecutive checks, in unit of Timer tick e.g. ClockCycle, Millisecond, Microsecond etc.
      * @return Set to true if the condition is met or false otherwise.
+    * @note ALWAYS_INLINE
      */
     template<typename Timer >
-    void delay(Timer timer, const uint32_t timerTickCount)
+    __attribute__((always_inline)) static inline void delay(Timer& timer, const uint32_t timerTickCount)
     {
-        const uint32_t tickEnd = timer.count() + timerTickCount;
-        while (timer.count() < tickEnd)
-        {
-            /** Do nothing */
-        };
+        continueAt(timer, timer.count() + timerTickCount);
     }
 
     /// @todo Cleanup impl re comments!
