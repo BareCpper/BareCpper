@@ -118,7 +118,7 @@ namespace BareCpper
 
 #if !DOXYGEN ///< Platform specific interface definitions
 #if __SAMD51__
-#include "ATsamd/Common_Atsamd5x.hpp"
+#include "ATsamd/Common_ATsamd5x.hpp"
 #endif
 #endif
 

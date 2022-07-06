@@ -22,7 +22,7 @@ namespace BareCpper
 
 #if !DOXYGEN ///< Platform specific interface definitions
 #if __SAMD51__
-#include "ATsamd/TwiAsync_Atsamd5x.hpp"
+#include "ATsamd/TwiAsync_ATsamd5x.hpp"
 #endif
 #endif
 
