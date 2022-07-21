@@ -14,7 +14,6 @@
 #include "Sercom_ATsamd5x.hpp" //< BareCpper::ATsamd5x::sercomForPins, BareCpper::ATsamd5x::sercom
 
 #include "sam.h"
-//#include "sercom.h"
 
 #if 0 ///ASF4 example
 
