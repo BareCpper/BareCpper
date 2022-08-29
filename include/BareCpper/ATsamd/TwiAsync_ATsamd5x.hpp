@@ -11,9 +11,9 @@
 #include <iterator> //< std::begin, std::end, std::distance
 #include "../Common.hpp" //< BareCpper::pollForCondition
 #include "Gpio_ATsam5x.hpp" //< BareCpper::pollForCondition
+#include "Sercom_ATsamd5x.hpp" //< BareCpper::ATsamd5x::sercomForPins, BareCpper::ATsamd5x::sercom
 
 #include "sam.h"
-#include "sercom.h"
 
 #if 0 ///ASF4 example
 
@@ -641,23 +641,5 @@ namespace BareCpper
         Service service_; ///< Service state
     };
 
-    TwiAsync* TwiAsync::sercom_s[SERCOM_INST_NUM] = {};
+    inline TwiAsync* TwiAsync::sercom_s[SERCOM_INST_NUM] = {};
 } //END: BareCpper
-
-
-extern "C" void SERCOM2_0_Handler( void )
-{
-    BareCpper::TwiAsync::SERCOM2_Handler();
-}
-extern "C" void SERCOM2_1_Handler( void )
-{
-    BareCpper::TwiAsync::SERCOM2_Handler();
-}
-extern "C" void SERCOM2_2_Handler( void )
-{
-    BareCpper::TwiAsync::SERCOM2_Handler();
-}
-extern "C" void SERCOM2_3_Handler( void )
-{
-    BareCpper::TwiAsync::SERCOM2_Handler();
-}

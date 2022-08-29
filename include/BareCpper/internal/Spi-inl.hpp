@@ -1,7 +1,7 @@
 #ifndef BARECPPER_SPI_INL_HPP_
 #define BARECPPER_SPI_INL_HPP_
 
-#include "../../BareCpper/gpio.hpp" //< gpioDirectionIn, gpioPullDisable @todo Ardunio can't path this properly!
+#include "../../BareCpper/Gpio.hpp" //< gpioDirectionIn, gpioPullDisable @todo Ardunio can't path this properly!
 
 namespace BareCpper
 {
