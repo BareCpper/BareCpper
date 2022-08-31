@@ -9,7 +9,8 @@
 #include <cstdint>
 #include <iterator> //< std::begin, std::end, std::distance
 #include "../Common.hpp" //< BareCpper::pollForCondition
-#include "Gpio_ATsam5x.hpp" //< BareCpper::pollForCondition
+#include "../Gpio.hpp" //< BareCpper::pollForCondition
+#include "../TwiAsync.hpp"
 #include "Sercom_ATsamd5x.hpp" //< BareCpper::ATsamd5x::sercomForPins, BareCpper::ATsamd5x::sercom
 
 #include <sam.h>

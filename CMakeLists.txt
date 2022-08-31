@@ -108,9 +108,6 @@ target_compile_features( BareCpper
     cxx_variadic_templates
 )
 
-target_link_libraries( BareCpper
-  PRIVATE
-    microchip::samd51::csp
-)
+# link BareCpper before you are using it with your CSP/BSP
 
 add_subdirectory(examples)
