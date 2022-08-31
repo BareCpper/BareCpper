@@ -264,7 +264,7 @@ namespace BareCpper
 			void setResolution(const ADCresolution& resolution) override
 			{
 				// Call the base class function
-				BareCpper::ADC::setResolution(resolution);
+				BareCpper::AdcBase::setResolution(resolution);
 				// Change the ADC resolution
 				// disable the ADC if it is running
 				const bool shouldRestart = adcInstance_->CTRLA.bit.ENABLE;

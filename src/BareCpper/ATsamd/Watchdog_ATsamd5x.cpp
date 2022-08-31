@@ -1,4 +1,4 @@
-#include "WatchdogSAMD51.hpp"
+#include "BareCpper/ATsamd/Watchdog_ATsamd5x.hpp"
 #include <algorithm>
 
 namespace BareCpper
