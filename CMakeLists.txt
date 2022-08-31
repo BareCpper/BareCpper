@@ -7,8 +7,6 @@ endif()
 
 project( BareCpper )
 
-find_package(microchip::samd51::csp REQUIRED)
-
 add_library( BareCpper STATIC )
 
 target_include_directories( BareCpper
@@ -22,10 +20,10 @@ target_sources( BareCpper
   PUBLIC
     "include/BareCpper/AnalogToDigitalConverter.hpp"
     "include/BareCpper/assert.h"
-    "include/BareCpper/BareCpper.cpp"
-    "include/BareCpper/BareCpper.hpp"
-    "include/BareCpper/CharacterSet_8x5.cpp"
-    "include/BareCpper/CharacterSet_8x5.h"
+    #"include/BareCpper/BareCpper.cpp"
+    #"include/BareCpper/BareCpper.hpp"
+    #"include/BareCpper/CharacterSet_8x5.cpp"
+    #"include/BareCpper/CharacterSet_8x5.h"
     "include/BareCpper/Chrono.hpp"
     "include/BareCpper/CodeProfiler.hpp"
     "include/BareCpper/Common.hpp"
@@ -87,11 +85,11 @@ target_sources( BareCpper
     "include/BareCpper/nRF52/MonotonicCounter_nRF52.hpp"
     "include/BareCpper/nRF52/Uart_nRF52.hpp"
     "include/BareCpper/nRF52/UartDma_nRF52.hpp"
-    "include/BareCpper/Philips/LcdDisplay_PCD8544.cpp"
-    "include/BareCpper/Philips/LcdDisplay_PCD8544.hpp"
-    "include/BareCpper/Philips/LcdPanel_PCD8544.cpp"
-    "include/BareCpper/Philips/LcdPanel_PCD8544.hpp"
-    "include/BareCpper/Philips/PCD8544.hpp"
+    #"include/BareCpper/Philips/LcdDisplay_PCD8544.cpp"
+    #"include/BareCpper/Philips/LcdDisplay_PCD8544.hpp"
+    #"include/BareCpper/Philips/LcdPanel_PCD8544.cpp"
+    #"include/BareCpper/Philips/LcdPanel_PCD8544.hpp"
+    #"include/BareCpper/Philips/PCD8544.hpp"
     "include/BareCpper/SoftDevice/Spi_SoftDevice.hpp"
   PRIVATE
     "src/BareCpper/ATsamd/AnalogToDigitalConverter_ATsamd5x.cpp"
