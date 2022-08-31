@@ -20,7 +20,7 @@ namespace BareCpper
     #if NRF52_SERIES
         #include "nRF52/DeviceUid_nRF52.hpp"
     #elif __SAMD51__
-        #include "ATsamd/DeviceUid_Atsamd5x.hpp"
+        #include "ATsamd/DeviceUid_ATsamd5x.hpp"
     #endif
 #endif
 
