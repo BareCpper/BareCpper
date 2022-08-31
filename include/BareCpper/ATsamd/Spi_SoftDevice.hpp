@@ -1,1 +1,1 @@
-#inlude "../SoftDevice/Spi_SoftDevice.hpp"
+#include "../SoftDevice/Spi_SoftDevice.hpp"

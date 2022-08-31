@@ -1,6 +1,5 @@
-#ifndef BARECPPER_SPI_HPP_
-#  error "Include <BareCpper/Spi.hpp> instead of this file."
-#endif
+#ifndef SPI_ATSAMD5X_HPP
+#define SPI_ATSAMD5X_HPP
 
 #if !__SAMD51__
 #  error "SAMD library error, please check and update accordingly."
@@ -316,3 +315,5 @@ namespace BareCpper
 #endif
 
 } //END: BareCpper
+
+#endif //SPI_ATSAMD5X_HPP

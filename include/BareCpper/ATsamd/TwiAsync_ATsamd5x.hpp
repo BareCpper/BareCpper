@@ -1,6 +1,5 @@
-#ifndef BARECPPER_TWIASYNC_HPP_
-#  error "Include <BareCpper/TwiAsync.hpp> instead of this file."
-#endif
+#ifndef TWI_ASYNC_ATSAMD5X_HPP
+#define TWI_ASYNC_ATSAMD5X_HPP
 
 #if !__SAMD51__
 #  error "SAMD library error, please check and update accordingly."
@@ -13,7 +12,7 @@
 #include "Gpio_ATsam5x.hpp" //< BareCpper::pollForCondition
 #include "Sercom_ATsamd5x.hpp" //< BareCpper::ATsamd5x::sercomForPins, BareCpper::ATsamd5x::sercom
 
-#include "sam.h"
+#include <sam.h>
 
 #if 0 ///ASF4 example
 
@@ -645,3 +644,5 @@ namespace BareCpper
 
     inline TwiAsync* TwiAsync::sercom_s[SERCOM_INST_NUM] = {};
 } //END: BareCpper
+
+#endif //TWI_ASYNC_ATSAMD5X_HPP

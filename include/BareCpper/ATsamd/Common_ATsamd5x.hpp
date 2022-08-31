@@ -5,7 +5,7 @@
 #  error "SAMD library error, please check and update accordingly."
 #endif
 
-#include "sam.h"
+#include <sam.h>
 
 // @{ Map new v2.x names to Samd51 v1.x @note Old names may conflict/overlap with user code 
 #if HEADER_FORMAT_VERSION_MAJOR>1

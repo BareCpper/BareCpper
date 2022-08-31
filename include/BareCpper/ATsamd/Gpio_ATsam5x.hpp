@@ -1,10 +1,6 @@
 #ifndef BARECPPER_GPIO_ATSAM5X_H_
 #define BARECPPER_GPIO_ATSAM5X_H_
 
-#ifndef BARECPPER_GPIO_H_
-#  error "Include <BareCpper/Gpio.hpp> instead of this file."
-#endif
-
 #include <cassert>
 #include <array>
 

@@ -1,7 +1,5 @@
-
-#ifndef BARECPPER_SWI_HPP_
-#  error "Include <BareCpper/Swi.hpp> instead of this file."
-#endif
+#ifndef SWI_SOFT_DEVICES_HPP
+#define SWI_SOFT_DEVICES_HPP
 
 #if !__SAMD51__
 #  error "SAMD library error, please check and update accordingly."
@@ -9,7 +7,7 @@
 
 #include <cstring> //< std::memcpy
 
-#include "sam.h"
+#include <sam.h>
 
 //#define STANDARD_SPEED/* Disable Interrupts */
 
@@ -459,3 +457,5 @@ namespace BareCpper
 	}
 
 } //END: BareCpper
+
+#endif //SWI_SOFT_DEVICES_HPP

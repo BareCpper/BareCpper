@@ -8,7 +8,7 @@
 #include <cstdint>
 
 #include "../TemperatureSensor.hpp"
-#include "../AnalogToDigitalConverter_ATsamd5x.hpp"
+#include "AnalogToDigitalConverter_ATsamd5x.hpp"
 
 #include <sam.h>
 
