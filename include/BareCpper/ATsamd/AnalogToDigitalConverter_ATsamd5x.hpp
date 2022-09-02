@@ -72,7 +72,7 @@ namespace BareCpper
 		*/
 		template < uint8_t adcIndex >
 		class ADC
-			: BareCpper::ADC
+			: BareCpper::AdcBase
 		{
 			Adc* const adcInstance_ = adcInstance(adcIndex);  //< the ADC instance pointer
 
@@ -289,7 +289,7 @@ namespace BareCpper
 			void setResolution(const ADCresolution& resolution) override
 			{
 				// Call the base class function
-				BareCpper::ADC::setResolution(resolution);
+				BareCpper::AdcBase::setResolution(resolution);
 				// Change the ADC resolution
 				// disable the ADC if it is running
 				const bool shouldRestart = adcInstance_->CTRLA.bit.ENABLE;
