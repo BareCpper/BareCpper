@@ -26,7 +26,7 @@ namespace BareCpper
 		* @brief Read the internal SAMD51 temperature sensor
 		*/
 		class TemperatureSensor
-			: TemperatureSensor<float>
+			: BareCpper::TemperatureSensor<float>
 		{
 		public:
 			TemperatureSensor();
