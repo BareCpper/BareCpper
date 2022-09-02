@@ -32,7 +32,7 @@ namespace BareCpper
     {
       WDT->CLEAR.reg = WDT_CLEAR_CLEAR_KEY; //< clear watchdog interval	
       WDT->CTRLA.bit.ENABLE = 1;  //< start watchdog
-      while(!WDT->SYNCBUSY.bit.ENABLE);  //< wait for synchronization
+      // while(!WDT->SYNCBUSY.bit.ENABLE);  //< don't wait for synchronization here, takes too long
 
       // enable WDT interrupt
       NVIC_SetPriority(WDT_IRQn, 0);
