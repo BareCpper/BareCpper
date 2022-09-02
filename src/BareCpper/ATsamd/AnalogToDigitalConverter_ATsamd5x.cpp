@@ -1,4 +1,4 @@
-#include "BareCpper/ATsamd/AnalogToDigitalConverter_ATsamd5x.hpp"
+#include "BareCpper/include/ATsamd/AnalogToDigitalConverter_ATsamd5x.hpp"
 
 namespace BareCpper
 {
