@@ -1,7 +1,6 @@
 
-#ifndef BARECPPER_DEVICEUID_HPP_
-#  error "Include <BareCpper/DeviceUid.hpp> instead of this file."
-#endif
+#ifndef DEVICE_UID_ATSAMD5X_HPP
+#define DEVICE_UID_ATSAMD5X_HPP
 
 #if !__SAMD51__
 #  error "SAMD library error, please check and update accordingly."
@@ -34,3 +33,5 @@ namespace BareCpper
     {}
 
 } //END: BareCpper
+
+#endif //DEVICE_UID_ATSAMD5X_HPP

@@ -4,7 +4,7 @@
 #if !__SAMD51__
 #  error "SAMD library error, please check and update accordingly."
 #endif
-#include "sam.h"
+#include <sam.h>
 
 #include <cassert>
 #include <array>

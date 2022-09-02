@@ -1,14 +1,11 @@
-#pragma once
-
-#ifndef BARECPPER_CHRONO_MONOTONICCOUNTER_HPP
-#  error "Include <BareCpper/MonotonicCounter.hpp> instead of this file."
-#endif
+#ifndef MONOTONIC_COUNTER_ATSAMD5X_HPP
+#define MONOTONIC_COUNTER_ATSAMD5X_HPP
 
 #if !__SAMD51__
 #  error "SAMD library error, please check and update accordingly."
 #endif
 
-#include "sam.h"
+#include <sam.h>
 
 namespace BareCpper {
 
@@ -70,3 +67,5 @@ namespace BareCpper {
     }
 
 } //END: BareCpper
+
+#endif //MONOTONIC_COUNTER_ATSAMD5X_HPP

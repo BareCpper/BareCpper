@@ -1,8 +1,5 @@
-#pragma once
-
-#ifndef BARECPPER_CYCLETIMER_HPP
-#  error "Include <BareCpper/CycleCounter.h> instead of this file."
-#endif
+#ifndef CYCLE_COUNTER_ARMM4_HPP
+#define CYCLE_COUNTER_ARMM4_HPP
 
 #ifndef CORE_FREQUENCY
 #ifndef F_CPU
@@ -55,3 +52,5 @@ namespace BareCpper
     }
 
 } //END: BareCpper
+
+#endif //CYCLE_COUNTER_ARMM4_HPP

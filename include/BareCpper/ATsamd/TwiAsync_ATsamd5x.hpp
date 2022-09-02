@@ -1,6 +1,5 @@
-#ifndef BARECPPER_TWIASYNC_HPP_
-#  error "Include <BareCpper/TwiAsync.hpp> instead of this file."
-#endif
+#ifndef TWI_ASYNC_ATSAMD5X_HPP
+#define TWI_ASYNC_ATSAMD5X_HPP
 
 #if !__SAMD51__
 #  error "SAMD library error, please check and update accordingly."
@@ -10,10 +9,11 @@
 #include <cstdint>
 #include <iterator> //< std::begin, std::end, std::distance
 #include "../Common.hpp" //< BareCpper::pollForCondition
-#include "Gpio_ATsam5x.hpp" //< BareCpper::pollForCondition
+#include "../Gpio.hpp" //< BareCpper::pollForCondition
+#include "../TwiAsync.hpp"
 #include "Sercom_ATsamd5x.hpp" //< BareCpper::ATsamd5x::sercomForPins, BareCpper::ATsamd5x::sercom
 
-#include "sam.h"
+#include <sam.h>
 
 #if 0 ///ASF4 example
 
@@ -301,6 +301,8 @@ namespace BareCpper
 
         bool initialiseClock()
         {
+            extern bool ensureTwiAsync_ATsamd5xLink;
+            ensureTwiAsync_ATsamd5xLink = true;  //< ensure the source file with handlers is linked in targets using BareCpper
             GCLK->PCHCTRL[SERCOM2_GCLK_ID_CORE].bit.CHEN = 0;     // Disable timer
             GCLK->PCHCTRL[SERCOM2_GCLK_ID_SLOW].bit.CHEN = 0;     // Disable timer
 
@@ -643,3 +645,5 @@ namespace BareCpper
 
     inline TwiAsync* TwiAsync::sercom_s[SERCOM_INST_NUM] = {};
 } //END: BareCpper
+
+#endif //TWI_ASYNC_ATSAMD5X_HPP
