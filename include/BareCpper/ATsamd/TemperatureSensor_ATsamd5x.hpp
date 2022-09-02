@@ -25,7 +25,7 @@ namespace BareCpper
 			: BareCpper::TemperatureSensor<float>
 		{
 		public:
-			TemperatureSensorSAMD51()
+			TemperatureSensor()
 			{
 				// Read the calibration parameters stored in NVM
 				calibrationParameters_.TLI = (*reinterpret_cast<uint32_t*>(FUSES_ROOM_TEMP_VAL_INT_ADDR) & FUSES_ROOM_TEMP_VAL_INT_Msk) >> FUSES_ROOM_TEMP_VAL_INT_Pos;
@@ -44,7 +44,20 @@ namespace BareCpper
 				};
 				calibrationParameters_.TL = calibrationParameters_.TLI + decimal2float(calibrationParameters_.TLD);
 				calibrationParameters_.TH = calibrationParameters_.THI + decimal2float(calibrationParameters_.THD);
+			}
 
+			~TemperatureSensor()
+			{
+				disable();
+			}
+
+			/**
+			 * Initialize the peripherals needed
+			 * for temperature reading.
+			 * 
+			 */
+			void init()
+			{
 				// initialize the adc
 				adc_.init(ADCresolution::BIT12);
 				adc_.setVoltageReference(ADCreference::Internal3V3);
@@ -53,11 +66,6 @@ namespace BareCpper
 				// the internal voltage reference is also used,
 				// check datasheet, p.222, section 19.6.2.2
 				SUPC->VREF.bit.ONDEMAND = 1;
-			}
-
-			~TemperatureSensorSAMD51()
-			{
-				disable();
 			}
 
 			/**

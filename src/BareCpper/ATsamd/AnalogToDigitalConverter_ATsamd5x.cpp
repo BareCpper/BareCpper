@@ -11,7 +11,7 @@ namespace BareCpper
 }
 
 // ADC0 RESRDY interrupt handler
-void ADC0_RESRDY_Handler()
+void ADC0_1_Handler()
 {
 	using namespace BareCpper::SAMD51;
 	// call callback
@@ -21,7 +21,7 @@ void ADC0_RESRDY_Handler()
 }
 
 // ADC1 RESRDY interrupt handler
-void ADC1_RESRDY_Handler()
+void ADC1_1_Handler()
 {
 	using namespace BareCpper::SAMD51;
 	// call callback

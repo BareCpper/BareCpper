@@ -6,14 +6,19 @@
 #endif
 
 #include <array>
-
 #include "../AnalogToDigitalConverter.hpp"
 #include <sam.h>
+#if __has_include(<component-version.h>) 
+#include <component-version.h> //< Atmel SAM version defines
+#else
+#define COMPONENT_VERSION_MAJOR 1 //< Artdunio has v1 headers
+#endif
 
 namespace BareCpper
 {
 	namespace SAMD51
 	{
+
 		/**
 		 * @brief Get requested MCU ADC instance
 		 * @param adcIndex The index of the ADC instance
@@ -67,9 +72,20 @@ namespace BareCpper
 		*/
 		template < uint8_t adcIndex >
 		class ADC
-			: BareCpper::AdcBase
+			: EmteqLabs::ADC
 		{
 			Adc* const adcInstance_ = adcInstance(adcIndex);  //< the ADC instance pointer
+
+			static constexpr IRQn_Type irqConversionDoneInterrupt()
+			{
+				// @note Based on atmel reference hpl_adc.c : _adc_get_irq_num();
+#if COMPONENT_VERSION_MAJOR == 1
+				return static_cast<IRQn_Type>(ADC0_1_IRQn + (adcIndex << 1));
+#elif COMPONENT_VERSION_MAJOR == 2
+				return static_cast<IRQn_Type>(ADC0_RESRDY_IRQn + (adcIndex << 1));
+#endif
+			}
+
 		public:
 			ADC()
 			{
@@ -134,6 +150,15 @@ namespace BareCpper
 
 				// Set voltage reference to 2.5 V
 				setVoltageReference(ADCreference::Internal2V5);
+
+				// change to old reference (1.65 V)
+				// setVoltageReference(ADCreference::Internal1V65);
+
+				//// enable 4 samples averaging
+				// adcInstance_->AVGCTRL.reg = ADC_AVGCTRL_SAMPLENUM_4 |    // N oversampling
+				// ADC_AVGCTRL_ADJRES(0x2);   // Adjusting result to be 12bits as before
+
+				// while(adcInstance_->SYNCBUSY.reg & ADC_SYNCBUSY_AVGCTRL);  //wait for sync
 
 				// Set the clock divider
 				adcInstance_->CTRLA.bit.PRESCALER = ADC_CTRLA_PRESCALER_DIV64_Val;
@@ -264,7 +289,7 @@ namespace BareCpper
 			void setResolution(const ADCresolution& resolution) override
 			{
 				// Call the base class function
-				BareCpper::AdcBase::setResolution(resolution);
+				EmteqLabs::ADC::setResolution(resolution);
 				// Change the ADC resolution
 				// disable the ADC if it is running
 				const bool shouldRestart = adcInstance_->CTRLA.bit.ENABLE;
@@ -297,6 +322,8 @@ namespace BareCpper
 				}
 			}
 
+
+
 			/**
 			 * @brief Enable conversion done interrupt
 			*/
@@ -305,14 +332,9 @@ namespace BareCpper
 				// Enable ADC result ready interrupt
 				adcInstance_->INTENSET.bit.RESRDY = 1;
 				// Enable the interrupt in the NVIC
-				if constexpr (adcIndex == 0)
-				{
-					NVIC_EnableIRQ(ADC0_RESRDY_IRQn);
-				}
-				else if constexpr (adcIndex == 1)
-				{
-					NVIC_EnableIRQ(ADC1_RESRDY_IRQn);
-				}
+				constexpr auto irq = irqConversionDoneInterrupt();
+				NVIC_ClearPendingIRQ(irq);
+				NVIC_EnableIRQ(irq);
 			}
 
 			/**
@@ -323,14 +345,8 @@ namespace BareCpper
 				// Disable ADC result ready interrupt
 				adcInstance_->INTENCLR.bit.RESRDY = 1;
 				// Disable the interrupt in the NVIC
-				if constexpr (adcIndex == 0)
-				{
-					NVIC_DisableIRQ(ADC0_RESRDY_IRQn);
-				}
-				else if constexpr (adcIndex == 1)
-				{
-					NVIC_DisableIRQ(ADC1_RESRDY_IRQn);
-				}
+				constexpr auto irq = irqConversionDoneInterrupt();
+				NVIC_DisableIRQ(irq);
 			}
 
 			/**
@@ -374,7 +390,8 @@ namespace BareCpper
 				void startConversion(const uint32_t inputPin) override
 				{
 					adcInstance_->INPUTCTRL.bit.MUXPOS = inputPin;
-					while (adcInstance_->SYNCBUSY.bit.INPUTCTRL);
+					//@note Could wait here for sync, should be unecessary i.e. 
+					// while (adcInstance_->SYNCBUSY.bit.INPUTCTRL);
 					adcInstance_->SWTRIG.bit.START = 1;
 				}
 		};
