@@ -1,4 +1,8 @@
+#if ARDUINO
 #include "BareCpper/include/BareCpper/ATsamd/Watchdog_ATsamd5x.hpp"
+#else
+#include "BareCpper/ATsamd/Watchdog_ATsamd5x.hpp"
+#endif
 #include <algorithm>
 
 namespace BareCpper

@@ -1,5 +1,8 @@
+#if ARDUINO
 #include "BareCpper/include/BareCpper/ATsamd/TwiAsync_ATsamd5x.hpp"
-
+#else
+#include "BareCpper/ATsamd/TwiAsync_ATsamd5x.hpp"
+#endif
 /**
  * @note If there isn't any used symbol from this file, it
  * probably won't be linked in the target linking BareCpper,

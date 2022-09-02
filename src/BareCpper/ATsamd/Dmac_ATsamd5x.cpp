@@ -1,4 +1,8 @@
+#if ARDUINO
 #include "BareCpper/include/BareCpper/ATsamd/Dmac_ATsamd5x.hpp"
+#else
+#include "BareCpper/ATsamd/Dmac_ATsamd5x.hpp"
+#endif
 
 namespace BareCpper
 {

@@ -1,5 +1,8 @@
+#if ARDUINO
 #include "BareCpper/include/BareCpper/ATsamd/TimerCounter_ATsamd5x.hpp"
-
+#else
+#include "BareCpper/ATsamd/TimerCounter_ATsamd5x.hpp"
+#endif
 namespace BareCpper
 {
 	namespace SAMD51

@@ -1,4 +1,8 @@
+#if ARDUINO
 #include "BareCpper/include/BareCpper/ATsamd/TemperatureSensor_ATsamd5x.hpp"
+#else
+#include "BareCpper/ATsamd/TemperatureSensor_ATsamd5x.hpp"
+#endif
 
 namespace BareCpper
 {
