@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TEMPERATURE_SENSOR_HPP
+#define TEMPERATURE_SENSOR_HPP
 
 namespace BareCpper
 {
@@ -26,3 +27,5 @@ namespace BareCpper
 		virtual bool getTemperatureAsync(TemperatureT& temperature) = 0;
 	};
 }
+
+#endif //TEMPERATURE_SENSOR_HPP

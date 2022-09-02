@@ -25,8 +25,6 @@ namespace SAMD51
 		calibrationParameters_.TH = calibrationParameters_.THI + decimal2float(calibrationParameters_.THD);
 	}
 
-
-
 	TemperatureSensor::~TemperatureSensor()
 	{
 		disable();
@@ -75,20 +73,20 @@ namespace SAMD51
 		const auto currentState = async_.state;
 		switch (currentState)
 		{
-		case Async::State::Pending:
-			return false;
+      case Async::State::Pending:
+        return false;
 
-		case Async::State::Done:
-			async_.state = Async::State::Inactive;
-			temperature = temperatureFromAdc(async_.TC, async_.TP);
-			return true;
+      case Async::State::Done:
+        async_.state = Async::State::Inactive;
+        temperature = temperatureFromAdc(async_.TC, async_.TP);
+        return true;
 
-		default:
-		case Async::State::Inactive:
-			async_.state = Async::State::Pending;
-			adc_.setConversionDoneCallback(step1_onPTAT);
-			adc_.startConversion(SAMD51::ADCpins::TemperatureSensorPTAT);
-			return false;
+      default:
+      case Async::State::Inactive:
+        async_.state = Async::State::Pending;
+        adc_.setConversionDoneCallback(step1_onPTAT);
+        adc_.startConversion(SAMD51::ADCpins::TemperatureSensorPTAT);
+        return false;
 		}
 	}
 
