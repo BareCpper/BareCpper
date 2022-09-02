@@ -86,5 +86,5 @@ namespace BareCpper
 			} calibrationParameters_; //< structure holding the calibration parameters stored in NVM needed to obtain the temperature reading
 		};
 	}
-
+}
 #endif //TEMPERATURE_SENSOR_SAMD51_HPP
