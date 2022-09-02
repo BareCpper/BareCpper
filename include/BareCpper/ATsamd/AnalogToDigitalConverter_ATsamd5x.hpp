@@ -174,7 +174,7 @@ namespace BareCpper
 				// Configure analog pins here
 				// Problem: May be board dependent, right now it looks same
 				// on every variant
-
+				using Port = ::Port;
 				// LR (broadband photodiode after analog processing) is on PB02 (AIN[14])
 				// Configure PB02 as peripheral function B (ADC)
 				PORT->Group[1].PINCFG[2].bit.PMUXEN = 1;
