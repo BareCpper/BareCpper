@@ -53,8 +53,8 @@ namespace BareCpper
         void init()
         {
           // EIC MCLK is enabled by default
-          // Use GCLK0 for EIC
-          GCLK->PCHCTRL[EIC_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK0_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
+          // Use GCLK1 for EIC (max is 100 MHz)
+          GCLK->PCHCTRL[EIC_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
           // Wait for clock synchronization
 				  while (GCLK->SYNCBUSY.reg);
           // Reset the EIC
