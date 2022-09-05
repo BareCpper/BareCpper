@@ -47,7 +47,7 @@ namespace BareCpper
       NVIC_ClearPendingIRQ(WDT_IRQn);
       
       WDT->CTRLA.bit.ENABLE = 0;  //< Stop watchdog
-      while(WDT->SYNCBUSY.bit.ENABLE);  //< wait for synchronization
+      // while(WDT->SYNCBUSY.bit.ENABLE);  //< don't wait for synchronization here, takes too long
     }
 
     void Watchdog::feed()
