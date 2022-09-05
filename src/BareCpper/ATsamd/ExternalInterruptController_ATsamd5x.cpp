@@ -8,7 +8,7 @@ namespace BareCpper
 {
   namespace SAMD51
   {
-    static typename ExternalInterruptController::CallbackT ExternalInterruptController::callbacks_[NumberChannels];
+    typename ExternalInterruptController::CallbackT ExternalInterruptController::callbacks_[NumberChannels];
   }
 }
 

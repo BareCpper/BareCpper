@@ -73,7 +73,7 @@ namespace BareCpper
           const bool shouldRestart = EIC->CTRLA.reg & EIC_CTRLA_ENABLE;
           if(shouldRestart) disable();
           // set the Pin alternative function to peripheral A (EIC)
-          BareCpper::gpioFunction(pin, ATsamd5x::Peripheral::A);
+          BareCpper::gpioFunction<PinT>(pin, std::optional<ATsamd5x::Peripheral>{ATsamd5x::Peripheral::A});
           // configure the EIC sense mode
           constexpr auto channel = PinT::id().pin;
           constexpr uint8_t configRegNum = (channel > 7);
