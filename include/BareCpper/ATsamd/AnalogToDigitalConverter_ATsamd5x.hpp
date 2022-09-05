@@ -135,16 +135,11 @@ namespace BareCpper
 				 /*
 				  * ADC conversion time = Sampling time + <ADC resolution> * CLK_ADC
 				  * 
-				  * Sampling time should be chosen based on the following formula
-				  * (54.10.4 Analog-to-Digital Converter (ADC) Characteristics, p.1800 in the datasheet)
+				  * CLK_ADC is set to 48 MHz / 64 = 750 kHz (period of 1.333... us),
+				  * The default sampling time to 54 * CLK_ADC = 72 us.
 				  * 
-				  * tsamplehold >= (Rsample + Rsource) x Csample x 9.7
-				  * 
-				  * We can set CLK_ADC to 48 MHz / 64 = 750 kHz (period of 1.333... us),
-				  * the sampling time to 54 * CLK_ADC = 72 us.
-				  * 
-				  * Assuming 12-bit resolution.
-				  * One conversion will be done in 72 + 12 * 1.333 = 88 us.
+				  * Assuming 12-bit resolution,
+				  * one conversion will be done in 72 + 12 * 1.333 = 88 us.
 				 */
 				if constexpr (adcIndex == 0)
 				{
@@ -258,6 +253,15 @@ namespace BareCpper
 				while(adcInstance_->SYNCBUSY.reg & ADC_SYNCBUSY_AVGCTRL);  //wait for sync
 			}
 
+			/**
+			 * @brief Change the sampling time.
+			 * Sampling time should be chosen based on the following formula
+			 * (54.10.4 Analog-to-Digital Converter (ADC) Characteristics, p.1800 in the datasheet)
+			 * 
+			 * tsamplehold >= (Rsample + Rsource) x Csample x 9.7
+			 * 
+			 * @param samplingTimeUs The sampling time, in us
+			 */
 			void setSamplingTime(const float samplingTimeUs)
 			{
 				static constexpr float clkPeriodUs = 64/48; //< ADC clk period in us, prescaler is 64, generator freq is 48 MHz
