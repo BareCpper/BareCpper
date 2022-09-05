@@ -64,7 +64,7 @@ namespace BareCpper
         using CallbackT = std::function<void()>;
         
         template<typename PinT>
-        void attachInterrupt(const PinT& pin = PinT{}
+        void attachInterrupt(const PinT& pin
                             , const CallbackT& callback
                             , const ExternalInterruptSense& mode
                             , const ExternalInterruptDebouncer& debounce = ExternalInterruptDebouncer::Off)
@@ -100,13 +100,13 @@ namespace BareCpper
           // enable interrupt in EIC
           EIC->INTENSET.reg |= (0x1 << channel);
           // set callback
-          callbacks_[channel] = callback;
+          ExternalInterruptController::callbacks_[channel] = callback;
           // reenable EIC
           if(shouldRestart) enable();
         }
 
         template<typename PinT>
-        void detachInterrupt(const PinT& pin = PinT{})
+        void detachInterrupt(const PinT& pin)
         {
           // registers are enable-protected, disable EIC before configuring if it is enabled
           const bool shouldRestart = EIC->CTRLA.reg & EIC_CTRLA_ENABLE;
@@ -116,7 +116,7 @@ namespace BareCpper
           EIC->INTENCLR.reg |= (0x1 << channel);
           // disable interrupt in NVIC
           NVIC_DisableIRQ(IrqNumber);
-          callback_[channel] = nullptr;
+          ExternalInterruptController::callbacks_[channel] = nullptr;
           // reenable EIC
           if(shouldRestart) enable();
         }
@@ -162,7 +162,7 @@ namespace BareCpper
         static void IrqHandler(const uint8_t channel)
         {
           // call the callback function
-          if(callbacks_[channel]) callbacks_[channel];
+          if(ExternalInterruptController::callbacks_[channel]) ExternalInterruptController::callbacks_[channel];
           // clear the interrupt flag
           EIC->INTFLAG.reg |= (0x1 << channel);
         }
