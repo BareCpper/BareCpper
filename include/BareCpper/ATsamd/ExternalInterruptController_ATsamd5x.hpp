@@ -59,6 +59,8 @@ namespace BareCpper
 				  while (GCLK->SYNCBUSY.reg);
           // Reset the EIC
           reset();
+          // Enable the EIC
+          enable();
         }
 
         using CallbackT = std::function<void()>;
@@ -94,9 +96,10 @@ namespace BareCpper
             EIC->DEBOUNCEN.reg |= (0x1 << channel);
           }
           // enable interrupt in NVIC
-          constexpr auto IrqNumber = getIrqNumber(channel);
-          NVIC_ClearPendingIRQ(IrqNumber);
-          NVIC_EnableIRQ(IrqNumber);
+          constexpr auto irqNumber = getIrqNumber(channel);
+          NVIC_ClearPendingIRQ(irqNumber);
+          NVIC_SetPriority(irqNumber, 0);
+          NVIC_EnableIRQ(irqNumber);
           // enable interrupt in EIC
           EIC->INTENSET.reg |= (0x1 << channel);
           // set callback
@@ -110,12 +113,13 @@ namespace BareCpper
         {
           // registers are enable-protected, disable EIC before configuring if it is enabled
           const bool shouldRestart = EIC->CTRLA.reg & EIC_CTRLA_ENABLE;
+          if(shouldRestart) disable();
           constexpr auto channel = PinT::id().pin;
-          constexpr auto IrqNumber = getIrqNumber(channel);
+          constexpr auto irqNumber = getIrqNumber(channel);
           // disable interrupt in EIC
           EIC->INTENCLR.reg |= (0x1 << channel);
           // disable interrupt in NVIC
-          NVIC_DisableIRQ(IrqNumber);
+          NVIC_DisableIRQ(irqNumber);
           ExternalInterruptController::callbacks_[channel] = nullptr;
           // reenable EIC
           if(shouldRestart) enable();
@@ -159,7 +163,7 @@ namespace BareCpper
         static CallbackT callbacks_[NumberChannels];
 
         // function to call inside EIC IRQ handlers
-        static void IrqHandler(const uint8_t channel)
+        static void irqHandler(const uint8_t channel)
         {
           // call the callback function
           if(ExternalInterruptController::callbacks_[channel]) ExternalInterruptController::callbacks_[channel];

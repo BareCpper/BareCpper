@@ -17,82 +17,82 @@ extern "C"
 // define interrupt handlers
 void EIC_0_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(0);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(0);
 }
 
 void EIC_1_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(1);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(1);
 }
 
 void EIC_2_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(2);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(2);
 }
 
 void EIC_3_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(3);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(3);
 }
 
 void EIC_4_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(4);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(4);
 }
 
 void EIC_5_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(5);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(5);
 }
 
 void EIC_6_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(6);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(6);
 }
 
 void EIC_7_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(7);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(7);
 }
 
 void EIC_8_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(8);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(8);
 }
 
 void EIC_9_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(9);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(9);
 }
 
 void EIC_10_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(10);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(10);
 }
 
 void EIC_11_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(11);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(11);
 }
 
 void EIC_12_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(12);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(12);
 }
 
 void EIC_13_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(13);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(13);
 }
 
 void EIC_14_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(14);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(14);
 }
 
 void EIC_15_Handler()
 {
-  BareCpper::SAMD51::ExternalInterruptController::IrqHandler(15);
+  BareCpper::SAMD51::ExternalInterruptController::irqHandler(15);
 }
 
 }
