@@ -166,7 +166,7 @@ namespace BareCpper
         static void irqHandler(const uint8_t channel)
         {
           // call the callback function
-          if(ExternalInterruptController::callbacks_[channel]) ExternalInterruptController::callbacks_[channel];
+          if(ExternalInterruptController::callbacks_[channel]) ExternalInterruptController::callbacks_[channel]();
           // clear the interrupt flag
           EIC->INTFLAG.reg = (0x1 << channel);
         }
