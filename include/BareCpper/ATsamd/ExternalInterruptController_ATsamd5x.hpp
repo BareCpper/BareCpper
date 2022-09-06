@@ -95,6 +95,8 @@ namespace BareCpper
             EIC->DPRESCALER.reg |= (static_cast<uint8_t>(debounce) << dpresclareRegShift);
             EIC->DEBOUNCEN.reg |= (0x1 << channel);
           }
+          // set callback
+          ExternalInterruptController::callbacks_[channel] = callback;
           // enable interrupt in NVIC
           constexpr auto irqNumber = getIrqNumber(channel);
           NVIC_ClearPendingIRQ(irqNumber);
@@ -102,8 +104,6 @@ namespace BareCpper
           NVIC_EnableIRQ(irqNumber);
           // enable interrupt in EIC
           EIC->INTENSET.reg = (0x1 << channel);
-          // set callback
-          ExternalInterruptController::callbacks_[channel] = callback;
           // reenable EIC
           if(shouldRestart) enable();
         }
@@ -156,7 +156,7 @@ namespace BareCpper
         void reset()
         {
           EIC->CTRLA.reg |= EIC_CTRLA_SWRST;
-          while((EIC->CTRLA.reg & EIC_CTRLA_SWRST) && (EIC->SYNCBUSY.reg & EIC_SYNCBUSY_SWRST));
+          while(EIC->SYNCBUSY.reg & EIC_SYNCBUSY_SWRST);
         }
 
         // callback function holders
@@ -168,7 +168,7 @@ namespace BareCpper
           // call the callback function
           if(ExternalInterruptController::callbacks_[channel]) ExternalInterruptController::callbacks_[channel];
           // clear the interrupt flag
-          EIC->INTFLAG.reg |= (0x1 << channel);
+          EIC->INTFLAG.reg = (0x1 << channel);
         }
       private:
         static constexpr IRQn_Type getIrqNumber(const uint8_t channel)
