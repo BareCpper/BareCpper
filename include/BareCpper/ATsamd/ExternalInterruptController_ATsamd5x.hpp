@@ -45,7 +45,7 @@ namespace BareCpper
     class ExternalInterruptController
     {
       public:
-        static constexpr uint8_t NumberChannels = 16;
+        static constexpr uint8_t NumberChannels = EIC_EXTINT_NUM;
         /**
          * Initialize the EIC
          * 
@@ -65,6 +65,21 @@ namespace BareCpper
 
         using CallbackT = std::function<void()>;
         
+        /**
+         * @brief Configure external interrupt for
+         * the specified pin.
+         * @note Equal pin numbers from different ports
+         * share the same EIC channel, and also pins with
+         * numbers >= 16 share the same EIC channels as pins
+         * 0 to 15. Ensure that only one pins is configured
+         * for external interrupt at a given instance.
+         * 
+         * @tparam PinT The Pin type
+         * @param pin The pin instance
+         * @param callback The function to call when interrupt happens
+         * @param mode The sense mode for the interrupt
+         * @param debounce Debouncing for pin
+         */
         template<typename PinT>
         void attachInterrupt(const PinT& pin
                             , const CallbackT& callback
@@ -108,6 +123,12 @@ namespace BareCpper
           if(shouldRestart) enable();
         }
 
+        /**
+         * @brief Disable external interrupt
+         * for the given pin.
+         * @tparam PinT The type of the pin.
+         * @param pin The pin instance.
+         */
         template<typename PinT>
         void detachInterrupt(const PinT& pin)
         {
@@ -121,6 +142,8 @@ namespace BareCpper
           // disable interrupt in NVIC
           NVIC_DisableIRQ(irqNumber);
           ExternalInterruptController::callbacks_[channel] = nullptr;
+          // disable pin alternate function
+          BareCpper::gpioFunction<PinT>(pin, std::nullopt);
           // reenable EIC
           if(shouldRestart) enable();
         }
@@ -159,9 +182,6 @@ namespace BareCpper
           while(EIC->SYNCBUSY.reg & EIC_SYNCBUSY_SWRST);
         }
 
-        // callback function holders
-        static CallbackT callbacks_[NumberChannels];
-
         // function to call inside EIC IRQ handlers
         static void irqHandler(const uint8_t channel)
         {
@@ -171,6 +191,9 @@ namespace BareCpper
           EIC->INTFLAG.reg = (0x1 << channel);
         }
       private:
+        // callback function holders
+        static CallbackT callbacks_[NumberChannels];
+
         static constexpr IRQn_Type getIrqNumber(const uint8_t channel)
         {
           return static_cast<IRQn_Type>(EIC_0_IRQn + channel);
