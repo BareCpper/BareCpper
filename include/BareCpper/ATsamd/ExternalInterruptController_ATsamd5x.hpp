@@ -114,7 +114,7 @@ namespace BareCpper
           // registers are enable-protected, disable EIC before configuring if it is enabled
           const bool shouldRestart = EIC->CTRLA.reg & EIC_CTRLA_ENABLE;
           if(shouldRestart) disable();
-          constexpr auto channel = PinT::id().pin;
+          constexpr auto channel = (PinT::id().pin > 15) ? (PinT::id().pin - 16) : PinT::id().pin;
           constexpr auto irqNumber = getIrqNumber(channel);
           // disable interrupt in EIC
           EIC->INTENCLR.reg = (0x1 << channel);
