@@ -101,7 +101,7 @@ namespace BareCpper
           NVIC_SetPriority(irqNumber, 0);
           NVIC_EnableIRQ(irqNumber);
           // enable interrupt in EIC
-          EIC->INTENSET.reg |= (0x1 << channel);
+          EIC->INTENSET.reg = (0x1 << channel);
           // set callback
           ExternalInterruptController::callbacks_[channel] = callback;
           // reenable EIC
@@ -117,7 +117,7 @@ namespace BareCpper
           constexpr auto channel = PinT::id().pin;
           constexpr auto irqNumber = getIrqNumber(channel);
           // disable interrupt in EIC
-          EIC->INTENCLR.reg |= (0x1 << channel);
+          EIC->INTENCLR.reg = (0x1 << channel);
           // disable interrupt in NVIC
           NVIC_DisableIRQ(irqNumber);
           ExternalInterruptController::callbacks_[channel] = nullptr;
