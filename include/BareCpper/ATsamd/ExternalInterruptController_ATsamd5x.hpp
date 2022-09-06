@@ -77,7 +77,7 @@ namespace BareCpper
           // set the Pin alternative function to peripheral A (EIC)
           BareCpper::gpioFunction<PinT>(pin, std::optional<ATsamd5x::Peripheral>{ATsamd5x::Peripheral::A});
           // configure the EIC sense mode
-          constexpr auto channel = PinT::id().pin;
+          constexpr auto channel = (PinT::id().pin > 15) ? (PinT::id().pin - 16) : PinT::id().pin;
           constexpr uint8_t configRegNum = (channel > 7);
           constexpr uint8_t configRegShift = (channel - 8*configRegNum) << 2; //< channel config starts at bit 4^channel
           EIC->CONFIG[configRegNum].reg &= ~(0x7 << configRegShift);
