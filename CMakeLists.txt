@@ -95,8 +95,10 @@ target_sources( BareCpper
     "src/BareCpper/ATsamd/AnalogToDigitalConverter_ATsamd5x.cpp"
     "src/BareCpper/ATsamd/Dmac_ATsamd5x.cpp"
     "src/BareCpper/ATsamd/EventSystem_ATsamd5x.cpp"
+    "src/BareCpper/ATsamd/ExternalInterruptController_ATsamd5x.cpp"
     "src/BareCpper/ATsamd/TimerCounter_ATsamd5x.cpp"
     "src/BareCpper/ATsamd/TimerCounterControl_ATsamd5x.cpp"
+    "src/BareCpper/ATsamd/TemperatureSensor_ATsamd5x.cpp"
     "src/BareCpper/ATsamd/TwiAsync_ATsamd5x.cpp"
     "src/BareCpper/ATsamd/Watchdog_ATsamd5x.cpp"
 )
