@@ -9,6 +9,11 @@
 
 #include "../Gpio.hpp"
 #include <sam.h>
+#if __has_include(<component-version.h>) 
+#include <component-version.h> //< Atmel SAM version defines
+#else
+#define COMPONENT_VERSION_MAJOR 1 //< Arduino has v1 headers
+#endif
 
 namespace BareCpper
 {
@@ -197,7 +202,11 @@ namespace BareCpper
 
         static constexpr IRQn_Type getIrqNumber(const uint8_t channel)
         {
-          return static_cast<IRQn_Type>(EIC_0_IRQn + channel);
+#if COMPONENT_VERSION_MAJOR == 1
+				return static_cast<IRQn_Type>(EIC_0_IRQn + channel);
+#elif COMPONENT_VERSION_MAJOR == 2
+				return static_cast<IRQn_Type>(EIC_EXTINT_0_IRQn + channel);
+#endif
         }
     };
   }

@@ -3,24 +3,12 @@
 #else
 #include "BareCpper/ATsamd/TwiAsync_ATsamd5x.hpp"
 #endif
-/**
- * @note If there isn't any used symbol from this file, it
- * probably won't be linked in the target linking BareCpper,
- * as it will not include this object file.
- * The static library will include both symbols for the
- * handlers, the WEAK ones and these ones. When linking,
- * because no symbol is used from this file, the WEAK
- * ones will be included in compiled binary.
- * Can be checked with readelf -s <binary>.
- * 
- * To resolve this, one global variable is provided,
- * defined in this translation unit and used in a function
- * in the header file.
-*/
-namespace BareCpper
-{
-  bool ensureTwiAsync_ATsamd5xLink = false;
-}
+
+#if __has_include(<component-version.h>) 
+#include <component-version.h> //< Atmel SAM version defines
+#else
+#define COMPONENT_VERSION_MAJOR 1 //< Arduino has v1 headers
+#endif
 
 extern "C"
 {
@@ -38,8 +26,11 @@ extern "C"
   {
     BareCpper::TwiAsync::SERCOM2_Handler();
   }
-
+#if COMPONENT_VERSION_MAJOR == 1
   void SERCOM2_3_Handler(void)
+#elif COMPONENT_VERSION_MAJOR == 2
+  void SERCOM2_OTHER_Handler(void)
+#endif
   {
     BareCpper::TwiAsync::SERCOM2_Handler();
   }

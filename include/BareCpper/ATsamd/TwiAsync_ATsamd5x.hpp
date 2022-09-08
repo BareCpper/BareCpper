@@ -301,8 +301,6 @@ namespace BareCpper
 
         bool initialiseClock()
         {
-            extern bool ensureTwiAsync_ATsamd5xLink;
-            ensureTwiAsync_ATsamd5xLink = true;  //< ensure the source file with handlers is linked in targets using BareCpper
             GCLK->PCHCTRL[SERCOM2_GCLK_ID_CORE].bit.CHEN = 0;     // Disable timer
             GCLK->PCHCTRL[SERCOM2_GCLK_ID_SLOW].bit.CHEN = 0;     // Disable timer
 

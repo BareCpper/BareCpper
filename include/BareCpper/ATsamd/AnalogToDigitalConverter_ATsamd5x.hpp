@@ -12,7 +12,7 @@
 #if __has_include(<component-version.h>) 
 #include <component-version.h> //< Atmel SAM version defines
 #else
-#define COMPONENT_VERSION_MAJOR 1 //< Artdunio has v1 headers
+#define COMPONENT_VERSION_MAJOR 1 //< Arduino has v1 headers
 #endif
 
 namespace BareCpper
