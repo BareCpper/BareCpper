@@ -14,7 +14,11 @@ namespace BareCpper
 }
 
 // ADC0 RESRDY interrupt handler
+#if COMPONENT_VERSION_MAJOR == 1
 void ADC0_1_Handler()
+#elif COMPONENT_VERSION_MAJOR == 2
+void ADC0_RESRDY_Handler()
+#endif
 {
 	using namespace BareCpper::SAMD51;
 	// call callback
@@ -24,7 +28,11 @@ void ADC0_1_Handler()
 }
 
 // ADC1 RESRDY interrupt handler
+#if COMPONENT_VERSION_MAJOR == 1
 void ADC1_1_Handler()
+#elif COMPONENT_VERSION_MAJOR == 2
+void ADC1_RESRDY_Handler()
+#endif
 {
 	using namespace BareCpper::SAMD51;
 	// call callback
