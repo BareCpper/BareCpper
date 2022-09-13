@@ -113,3 +113,5 @@ target_compile_features( BareCpper
 # link BareCpper before you are using it with your CSP/BSP
 
 add_subdirectory(examples)
+
+add_library( BareCpper::BareCpper ALIAS BareCpper )
