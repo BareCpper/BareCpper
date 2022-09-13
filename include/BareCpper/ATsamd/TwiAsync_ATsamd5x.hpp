@@ -641,7 +641,6 @@ namespace BareCpper
         Service service_; ///< Service state
     };
 
-    inline TwiAsync* TwiAsync::sercom_s[SERCOM_INST_NUM] = {};
 } //END: BareCpper
 
 #endif //TWI_ASYNC_ATSAMD5X_HPP
