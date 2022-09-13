@@ -35,3 +35,11 @@ extern "C"
     BareCpper::TwiAsync::SERCOM2_Handler();
   }
 }
+
+
+namespace BareCpper
+{
+
+    TwiAsync* TwiAsync::sercom_s[SERCOM_INST_NUM] = {};
+
+} //END: BareCpper
