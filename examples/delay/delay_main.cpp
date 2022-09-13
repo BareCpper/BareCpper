@@ -1,6 +1,6 @@
 #include <cstdint>
 #include <tuple>
-// @todo PORTING: #include <arduino.h>
+
 #include "BareCpper/Gpio.hpp"
 #include "BareCpper/CycleCounter.hpp"
 
