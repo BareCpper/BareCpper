@@ -408,7 +408,7 @@ namespace BareCpper {
     void gpioEnableInput( const Pin_t& pin )
     {
         using ::Port;
-        PORT->Group[pin.id().port].PINCFG[pin.pinport].bit.INEN = true;
+        PORT->Group[pin.id().port].PINCFG[pin.id().pin].bit.INEN = true;
     }
 
     template<typename Pin_t>
