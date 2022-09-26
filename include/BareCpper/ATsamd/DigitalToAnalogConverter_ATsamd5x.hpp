@@ -13,6 +13,8 @@
 #define COMPONENT_VERSION_MAJOR 1 //< Arduino has v1 headers
 #endif
 
+#include "../Gpio.hpp"
+
 namespace BareCpper
 {
 	namespace SAMD51
@@ -111,6 +113,15 @@ namespace BareCpper
           DAC->DACCTRL[DacChannel].reg |= DAC_DACCTRL_ENABLE;
 
           // config pins
+          // PA02(DAC0) and PA05(DAC1)
+          if constexpr(DacChannel == 0)
+          {
+            BareCpper::gpioFunction<PA02>(PA02{}, std::optional<ATsamd5x::Peripheral>{ATsamd5x::Peripheral::B});
+          }
+          else
+          {
+            BareCpper::gpioFunction<PA05>(PA05{}, std::optional<ATsamd5x::Peripheral>{ATsamd5x::Peripheral::B});
+          }
         }
 
         template<uint8_t DacChannel>
@@ -120,6 +131,16 @@ namespace BareCpper
           DAC->DACCTRL[DacChannel].reg &= ~DAC_DACCTRL_ENABLE;
 
           // config pins
+          // PA02(DAC0) and PA05(DAC1)
+          // disable pmuxen
+          if constexpr(DacChannel == 0)
+          {
+            BareCpper::gpioFunction<PA02>(PA02{}, std::nullopt);
+          }
+          else
+          {
+            BareCpper::gpioFunction<PA05>(PA05{}, std::nullopt);
+          }
         }
     };
   }
