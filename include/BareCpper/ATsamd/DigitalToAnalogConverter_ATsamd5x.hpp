@@ -144,13 +144,13 @@ namespace BareCpper
           DAC->CTRLB.reg &= ~DAC_CTRLB_REFSEL_Msk;
           if(ref == DacReference::UnbufferedExternalReference)
           {
-            voltageReference_ = 3.3f;
-          }
-          else if(ref == DacReference::VoltageSupply)
-          {
             // due to silicon error, VDDANA should be
             // connected to VREF and REFSEL should be 0b00
             voltageReference_ = externalRefValue;
+          }
+          else if(ref == DacReference::VoltageSupply)
+          {
+            voltageReference_ = 3.3f;  //< assumes 3.3V VDDANA
           }
           else if(ref == DacReference::BufferedExternalReference)
           {
