@@ -220,7 +220,7 @@ namespace BareCpper
          */
         template<uint8_t DacIndex>
         void configureChannel(const DacOversamplingRatio& osr = DacOversamplingRatio::Osr1
-                            , const uint8_t refreshPeriod = 0
+                            , uint8_t refreshPeriod = 0
                             , const bool dither = false
                             , const bool externalFilter = false)
         {
@@ -307,7 +307,7 @@ namespace BareCpper
          * @param dither If dithering is used, the value of the dither bits.
          */
         template<uint8_t DacIndex>
-        void writeDataSync(const uint16_t sample, const uint16_t dither = 0)
+        void writeDataSync(uint16_t sample, uint16_t dither = 0)
         {
           static_assert(DacIndex < 2, "There are only two dac channels available, 0 and 1");
           if(sample > maxValue) sample = maxValue;
@@ -338,7 +338,7 @@ namespace BareCpper
          * @param voltage The voltage to be set, in volts.
          */
         template<uint8_t DacIndex>
-        void setVoltageSync(const float voltage)
+        void setVoltageSync(float voltage)
         {
           static_assert(DacIndex < 2, "There are only two dac channels available, 0 and 1");
           // clamp the voltage between 0 and VREF
@@ -356,7 +356,7 @@ namespace BareCpper
          * @param dither If dithering is used, the value of the dither bits.
          */
         template<uint8_t DacIndex>
-        void writeDataAsync(const uint16_t sample, const uint16_t dither = 0)
+        void writeDataAsync(uint16_t sample, uint16_t dither = 0)
         {
           static_assert(DacIndex < 2, "There are only two dac channels available, 0 and 1");
           if(sample > maxValue) sample = maxValue;
@@ -379,7 +379,7 @@ namespace BareCpper
          * @param voltage The voltage to be set, in volts.
          */
         template<uint8_t DacIndex>
-        void setVoltageAsync(const float voltage)
+        void setVoltageAsync(float voltage)
         {
           static_assert(DacIndex < 2, "There are only two dac channels available, 0 and 1");
           // clamp the voltage between 0 and VREF
