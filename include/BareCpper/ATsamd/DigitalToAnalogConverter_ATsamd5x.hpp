@@ -133,6 +133,16 @@ namespace BareCpper
           while(DAC->SYNCBUSY.bit.SWRST);
         }
 
+        float getMaxVoltage() const
+        {
+          return voltageReference_;
+        }
+
+        float getMinVoltage() const
+        {
+          return 0.0f;
+        }
+
         /**
          * @brief Set the Voltage Reference to be used by the DACs.
          * 
