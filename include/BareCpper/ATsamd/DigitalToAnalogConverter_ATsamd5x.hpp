@@ -74,7 +74,7 @@ namespace BareCpper
      * Controls the two DACs inside the MCU.
      * 
      */
-    class DAC
+    class DigitalToAnalogConverter
     {
       public:
         static constexpr uint16_t maxValue = 4095;  //< 12-bit resolution
@@ -110,7 +110,7 @@ namespace BareCpper
           // wait for the startup time to finish for both DACs
           ///@note due to silicon bug, check INTFLAG EMPTY 0 and EMPTY 1
           while(DAC->INTFLAG.bit.EMPTY0);
-          while(DAC->STATUS.bit.EMPTY1);
+          while(DAC->INTFLAG.bit.EMPTY1);
         }
 
         /**
@@ -344,7 +344,7 @@ namespace BareCpper
           // clamp the voltage between 0 and VREF
           if(voltage < 0.0f) voltage = 0.0f;
           if(voltage > voltageReference_) voltage = voltageReference_;
-          writeDataSync(static_cast<uint16_t>(maxValue*voltage/voltageReference_));  //< maybe use std::round
+          writeDataSync<DacIndex>(static_cast<uint16_t>(maxValue*voltage/voltageReference_));  //< maybe use std::round
         }
 
          /**
@@ -385,7 +385,7 @@ namespace BareCpper
           // clamp the voltage between 0 and VREF
           if(voltage < 0.0f) voltage = 0.0f;
           if(voltage > voltageReference_) voltage = voltageReference_;
-          writeDataAsync(static_cast<uint16_t>(maxValue*voltage/voltageReference_));  //< maybe use std::round
+          writeDataAsync<DacIndex>(static_cast<uint16_t>(maxValue*voltage/voltageReference_));  //< maybe use std::round
         }
       private:
         float voltageReference_ = 1e6f;  //< big value so when dividing and casting gives 0 value to write in data reg, if vref is invalid
