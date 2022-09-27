@@ -109,8 +109,8 @@ namespace BareCpper
           while(DAC->SYNCBUSY.bit.ENABLE);
           // wait for the startup time to finish for both DACs
           ///@note due to silicon bug, check INTFLAG EMPTY 0 and EMPTY 1
-          while(DAC->INTFLAG.bit.EMPTY0);
-          while(DAC->INTFLAG.bit.EMPTY1);
+          if(DAC->DACCTRL[0].bit.ENABLE) while(!DAC->INTFLAG.bit.EMPTY0);
+          if(DAC->DACCTRL[1].bit.ENABLE) while(!DAC->INTFLAG.bit.EMPTY1);
         }
 
         /**
@@ -260,7 +260,6 @@ namespace BareCpper
         {
           static_assert(DacIndex < 2, "There are only two dac channels available, 0 and 1");
           DAC->DACCTRL[DacIndex].reg |= DAC_DACCTRL_ENABLE;
-
           // config pins
           // PA02(DAC0) and PA05(DAC1)
           if constexpr(DacIndex == 0)
@@ -284,7 +283,6 @@ namespace BareCpper
         {
           static_assert(DacIndex < 2, "There are only two dac channels available, 0 and 1");
           DAC->DACCTRL[DacIndex].reg &= ~DAC_DACCTRL_ENABLE;
-
           // config pins
           // PA02(DAC0) and PA05(DAC1)
           // disable pmuxen
