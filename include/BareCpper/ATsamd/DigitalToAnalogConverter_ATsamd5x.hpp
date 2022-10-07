@@ -17,8 +17,8 @@
 
 namespace BareCpper
 {
-	namespace SAMD51
-	{
+  namespace SAMD51
+  {
     /**
      * DAC voltage reference.
      * @note Because of silicon bug, the reference
@@ -33,13 +33,13 @@ namespace BareCpper
       VoltageSupply,
       BufferedExternalReference,
       Internal1V0                 = SUPC_VREF_SEL_1V0_Val,
-			Internal1V1                 = SUPC_VREF_SEL_1V1_Val,
-			Internal1V2                 = SUPC_VREF_SEL_1V2_Val,
-			Internal1V25                = SUPC_VREF_SEL_1V25_Val,
-			Internal2V0                 = SUPC_VREF_SEL_2V0_Val,
-			Internal2V2                 = SUPC_VREF_SEL_2V2_Val,
-			Internal2V4                 = SUPC_VREF_SEL_2V4_Val,
-			Internal2V5                 = SUPC_VREF_SEL_2V5_Val,
+      Internal1V1                 = SUPC_VREF_SEL_1V1_Val,
+      Internal1V2                 = SUPC_VREF_SEL_1V2_Val,
+      Internal1V25                = SUPC_VREF_SEL_1V25_Val,
+      Internal2V0                 = SUPC_VREF_SEL_2V0_Val,
+      Internal2V2                 = SUPC_VREF_SEL_2V2_Val,
+      Internal2V4                 = SUPC_VREF_SEL_2V4_Val,
+      Internal2V5                 = SUPC_VREF_SEL_2V5_Val,
     };
 
     /**
@@ -88,9 +88,9 @@ namespace BareCpper
           // enable clocks for DAC
           MCLK->APBDMASK.reg |= MCLK_APBDMASK_DAC;
           // ensure GCLK4 is configured for 12 MHz clock output
-					GCLK->PCHCTRL[DAC_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK4_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
+          GCLK->PCHCTRL[DAC_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK4_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
           // Wait for clock synchronization
-				  while (GCLK->SYNCBUSY.reg);
+          while (GCLK->SYNCBUSY.reg);
           // reset the peripheral
           reset();
           // setup current control
@@ -108,7 +108,7 @@ namespace BareCpper
           DAC->CTRLA.bit.ENABLE = 1;
           while(DAC->SYNCBUSY.bit.ENABLE);
           // wait for the startup time to finish for both DACs
-          ///@note due to silicon bug, check INTFLAG EMPTY 0 and EMPTY 1
+          ///@note due to silicon bug (Errata 2.9.6), check INTFLAG EMPTY 0 and EMPTY 1
           if(DAC->DACCTRL[0].bit.ENABLE) while(!DAC->INTFLAG.bit.EMPTY0);
           if(DAC->DACCTRL[1].bit.ENABLE) while(!DAC->INTFLAG.bit.EMPTY1);
         }
