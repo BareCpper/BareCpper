@@ -62,7 +62,7 @@ namespace BareCpper
 			Internal2V0 = SUPC_VREF_SEL_2V0_Val,
 			Internal2V2 = SUPC_VREF_SEL_2V2_Val,
 			Internal2V4 = SUPC_VREF_SEL_2V4_Val,
-			Internal2V5 = SUPC_VREF_SEL_2V4_Val,
+			Internal2V5 = SUPC_VREF_SEL_2V5_Val,
 			Internal1V65 = ADC_REFCTRL_REFSEL_INTVCC0_Val,
 			Internal3V3 = ADC_REFCTRL_REFSEL_INTVCC1_Val
 		};
